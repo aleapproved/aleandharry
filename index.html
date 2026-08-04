@@ -22,108 +22,21 @@
   <meta name="twitter:title" content="Ale &amp; Harry">
   <meta name="twitter:description" content="A Hale wedding website.">
   <meta name="twitter:image" content="https://aleandharry.com/images/og-image.jpg">
-  <style>
-    :root {
-      color-scheme: light;
-      --ink: #2f2a26;
-      --paper: #faf6f1;
-      --accent: #a8836f;
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    html, body {
-      height: 100%;
-    }
-
-    body {
-      margin: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
-      background: var(--paper);
-      color: var(--ink);
-      font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
-      text-align: center;
-      padding: 4rem 2rem;
-    }
-
-    main {
-      max-width: 32rem;
-      margin: auto 0;
-    }
-
-    figure {
-      margin: 4rem 0 0;
-      max-width: 34rem;
-    }
-
-    figure img {
-      width: 100%;
-      height: auto;
-      display: block;
-      border-radius: 4px;
-      box-shadow: 0 1.5rem 3rem -1.5rem rgba(47, 42, 38, 0.4);
-    }
-
-    figcaption {
-      margin-top: 1.25rem;
-      font-style: italic;
-      font-size: 0.95rem;
-      color: var(--accent);
-    }
-
-    .eyebrow {
-      letter-spacing: 0.3em;
-      text-transform: uppercase;
-      font-size: 0.75rem;
-      color: var(--accent);
-      margin-bottom: 1.5rem;
-    }
-
-    h1 {
-      font-size: clamp(2.5rem, 6vw, 4rem);
-      font-weight: 400;
-      margin: 0 0 1rem;
-      line-height: 1.15;
-    }
-
-    h1 .amp {
-      display: block;
-      font-style: italic;
-      color: var(--accent);
-      font-size: 0.6em;
-      margin: 0.25em 0;
-    }
-
-    p {
-      font-size: 1.05rem;
-      line-height: 1.6;
-      color: #5c5450;
-      margin: 0;
-    }
-
-    .rule {
-      width: 3rem;
-      height: 1px;
-      background: var(--accent);
-      margin: 1.75rem auto;
-    }
-  </style>
+  <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
+  <header class="site-header">
+    <a href="/" class="brand">Ale <span class="amp">&amp;</span> Harry</a>
+    <nav>
+      <a href="/our-story.html">Our Story</a>
+    </nav>
+  </header>
   <main>
     <p class="eyebrow">We're getting married</p>
     <h1>Ale<span class="amp">&amp;</span>Harry</h1>
     <div class="rule"></div>
     <p>Our wedding website is on its way.<br>Details to follow soon.</p>
+    <p class="teaser"><a href="/our-story.html">Read the story of how it all started &rarr;</a></p>
   </main>
-  <figure>
-    <img src="/images/firstdatemap.png" alt="Map of Ale and Harry's route around London on their first date." width="1488" height="989">
-    <figcaption>Where it all started &mdash; our first date, London.</figcaption>
-  </figure>
 </body>
 </html>

@@ -1,0 +1,148 @@
+:root {
+  color-scheme: light;
+  --ink: #2f2a26;
+  --paper: #faf6f1;
+  --accent: #a8836f;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+}
+
+a {
+  color: var(--accent);
+}
+
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid rgba(168, 131, 111, 0.25);
+}
+
+.site-header .brand {
+  text-decoration: none;
+  color: var(--ink);
+  font-size: 1.1rem;
+  letter-spacing: 0.05em;
+}
+
+.site-header .brand .amp {
+  font-style: italic;
+  color: var(--accent);
+}
+
+.site-header nav {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.site-header nav a {
+  text-decoration: none;
+  font-size: 0.85rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.site-header nav a[aria-current="page"] {
+  color: var(--ink);
+  border-bottom: 1px solid var(--accent);
+  padding-bottom: 0.2rem;
+}
+
+main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 4rem 2rem;
+}
+
+.eyebrow {
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  color: var(--accent);
+  margin-bottom: 1.5rem;
+}
+
+h1 {
+  font-size: clamp(2.5rem, 6vw, 4rem);
+  font-weight: 400;
+  margin: 0 0 1rem;
+  line-height: 1.15;
+}
+
+h1 .amp {
+  display: block;
+  font-style: italic;
+  color: var(--accent);
+  font-size: 0.6em;
+  margin: 0.25em 0;
+}
+
+p {
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: #5c5450;
+  margin: 0;
+  max-width: 32rem;
+}
+
+.rule {
+  width: 3rem;
+  height: 1px;
+  background: var(--accent);
+  margin: 1.75rem auto;
+}
+
+.teaser {
+  margin-top: 3rem;
+  font-size: 0.95rem;
+}
+
+.teaser a {
+  text-decoration: none;
+  border-bottom: 1px solid var(--accent);
+  padding-bottom: 0.1rem;
+}
+
+.moment {
+  max-width: 34rem;
+  margin-top: 3rem;
+}
+
+.moment:first-of-type {
+  margin-top: 3.5rem;
+}
+
+.moment img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 4px;
+  box-shadow: 0 1.5rem 3rem -1.5rem rgba(47, 42, 38, 0.4);
+}
+
+.moment figcaption {
+  margin-top: 1.25rem;
+  font-style: italic;
+  font-size: 0.95rem;
+  color: var(--accent);
+}

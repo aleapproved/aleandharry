@@ -7,45 +7,11 @@
   <meta name="robots" content="noindex">
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <link rel="stylesheet" href="/styles.css">
   <style>
-    :root {
-      color-scheme: light;
-      --ink: #2f2a26;
-      --paper: #faf6f1;
-      --accent: #a8836f;
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    html, body {
-      height: 100%;
-    }
-
-    body {
-      margin: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      background: var(--paper);
-      color: var(--ink);
-      font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
-      text-align: center;
-      padding: 2rem;
-    }
-
     main {
-      max-width: 32rem;
-    }
-
-    .eyebrow {
-      letter-spacing: 0.3em;
-      text-transform: uppercase;
-      font-size: 0.75rem;
-      color: var(--accent);
-      margin-bottom: 1.5rem;
+      justify-content: center;
+      flex: 1;
     }
 
     p.quote {
@@ -53,21 +19,17 @@
       font-style: italic;
       line-height: 1.6;
       margin: 0;
-    }
-
-    .rule {
-      width: 3rem;
-      height: 1px;
-      background: var(--accent);
-      margin: 1.75rem auto;
-    }
-
-    a {
-      color: var(--accent);
+      max-width: 32rem;
     }
   </style>
 </head>
 <body>
+  <header class="site-header">
+    <a href="/" class="brand">Ale <span class="amp">&amp;</span> Harry</a>
+    <nav>
+      <a href="/our-story.html">Our Story</a>
+    </nav>
+  </header>
   <main>
     <p class="eyebrow">404</p>
     <p class="quote">&ldquo;There&rsquo;s a time and place for everything, but not now.&rdquo;</p>
