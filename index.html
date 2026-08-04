@@ -10,7 +10,18 @@
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
-  <meta name="theme-color" content="#A9A49A">
+  <meta name="theme-color" content="#f7ecdd">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('theme');
+        var theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-theme', theme);
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute('content', theme === 'dark' ? '#1b1830' : '#f7ecdd');
+      } catch (e) {}
+    })();
+  </script>
 
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://aleandharry.com/">
@@ -33,14 +44,21 @@
 <body>
   <header class="site-header">
     <a href="/" class="brand">Ale <span class="amp">&amp;</span> Harry</a>
-    <nav>
-      <a href="/our-story.html">Our Story</a>
-    </nav>
+    <div class="nav-group">
+      <nav>
+        <a href="/our-story.html">Our Story</a>
+      </nav>
+      <button id="themeToggle" class="theme-toggle" aria-label="Toggle dark mode" type="button">
+        <img class="theme-icon-light" src="/images/solrock-icon.png" alt="" aria-hidden="true">
+        <img class="theme-icon-dark" src="/images/lunatone-icon.png" alt="" aria-hidden="true">
+      </button>
+    </div>
   </header>
   <main>
     <p class="eyebrow">We're getting married</p>
     <h1>Ale<span class="amp">&amp;</span>Harry</h1>
     <div class="rule"></div>
   </main>
+  <script src="/theme-toggle.js" defer></script>
 </body>
 </html>
