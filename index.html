@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Harry &amp; Ale</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #2f2a26;
+      --paper: #faf6f1;
+      --accent: #a8836f;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+    }
+
+    body {
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+      text-align: center;
+      padding: 2rem;
+    }
+
+    main {
+      max-width: 32rem;
+    }
+
+    .eyebrow {
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      color: var(--accent);
+      margin-bottom: 1.5rem;
+    }
+
+    h1 {
+      font-size: clamp(2.5rem, 6vw, 4rem);
+      font-weight: 400;
+      margin: 0 0 1rem;
+      line-height: 1.15;
+    }
+
+    h1 .amp {
+      display: block;
+      font-style: italic;
+      color: var(--accent);
+      font-size: 0.6em;
+      margin: 0.25em 0;
+    }
+
+    p {
+      font-size: 1.05rem;
+      line-height: 1.6;
+      color: #5c5450;
+      margin: 0;
+    }
+
+    .rule {
+      width: 3rem;
+      height: 1px;
+      background: var(--accent);
+      margin: 1.75rem auto;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <p class="eyebrow">We're getting married</p>
+    <h1>Harry<span class="amp">&amp;</span>Ale</h1>
+    <div class="rule"></div>
+    <p>Our wedding website is on its way.<br>Details to follow soon.</p>
+  </main>
+</body>
+</html>
