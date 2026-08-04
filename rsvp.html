@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RSVP &ndash; Ale &amp; Harry</title>
+  <meta name="description" content="RSVP for Ale and Harry's wedding.">
+  <link rel="canonical" href="https://aleandharry.com/rsvp.html">
+
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <meta name="theme-color" content="#f7ecdd">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('theme');
+        var theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-theme', theme);
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute('content', theme === 'dark' ? '#1b1830' : '#f7ecdd');
+      } catch (e) {}
+    })();
+  </script>
+
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://aleandharry.com/rsvp.html">
+  <meta property="og:title" content="RSVP &ndash; Ale &amp; Harry">
+  <meta property="og:description" content="RSVP for Ale and Harry's wedding.">
+  <meta property="og:image" content="https://aleandharry.com/images/og-image.jpg">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="RSVP &ndash; Ale &amp; Harry">
+  <meta name="twitter:description" content="RSVP for Ale and Harry's wedding.">
+  <meta name="twitter:image" content="https://aleandharry.com/images/og-image.jpg">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <a href="/" class="brand">Ale <span class="amp">&amp;</span> Harry</a>
+    <div class="nav-group">
+      <nav>
+        <a href="/our-story.html">Our Story</a>
+        <a href="/rsvp.html" aria-current="page">RSVP</a>
+      </nav>
+      <button id="themeToggle" class="theme-toggle" aria-label="Toggle dark mode" type="button">
+        <img class="theme-icon-light" src="/images/solrock-icon.png" alt="" aria-hidden="true">
+        <img class="theme-icon-dark" src="/images/lunatone-icon.png" alt="" aria-hidden="true">
+      </button>
+    </div>
+  </header>
+  <main>
+    <p class="eyebrow">RSVP</p>
+    <h1 style="font-size: clamp(2rem, 5vw, 3rem);">Let us know</h1>
+    <div class="rule"></div>
+
+    <form id="rsvpForm" class="rsvp-form" novalidate>
+      <div class="field">
+        <label for="name">Name</label>
+        <input type="text" id="name" name="name" autocomplete="name" required>
+      </div>
+
+      <div class="field">
+        <label>Will you be attending?</label>
+        <div class="toggle-group">
+          <input type="radio" id="attendingYes" name="attending" value="Yes" required>
+          <label for="attendingYes">Yes</label>
+          <input type="radio" id="attendingNo" name="attending" value="No">
+          <label for="attendingNo">No</label>
+        </div>
+      </div>
+
+      <div class="field field-party is-hidden">
+        <label for="partySize">Party size (including you)</label>
+        <input type="number" id="partySize" name="partySize" min="1" max="20" step="1" value="1">
+      </div>
+
+      <div class="field field-honeypot" aria-hidden="true">
+        <label for="company">Company</label>
+        <input type="text" id="company" name="company" tabindex="-1" autocomplete="off">
+      </div>
+
+      <button type="submit" class="rsvp-submit">Send RSVP</button>
+      <p class="rsvp-status is-hidden" id="rsvpStatus" role="status"></p>
+    </form>
+  </main>
+  <script src="/theme-toggle.js" defer></script>
+  <script src="/rsvp.js" defer></script>
+</body>
+</html>

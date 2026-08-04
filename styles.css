@@ -197,3 +197,115 @@ p {
   font-size: 0.95rem;
   color: var(--accent);
 }
+
+.rsvp-form {
+  width: 100%;
+  max-width: 26rem;
+  margin-top: 3rem;
+  text-align: left;
+}
+
+.field {
+  margin-bottom: 1.5rem;
+}
+
+.field label {
+  display: block;
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-bottom: 0.6rem;
+}
+
+.field input[type="text"],
+.field input[type="number"] {
+  width: 100%;
+  padding: 0.6rem 0.1rem;
+  font: inherit;
+  font-size: 1.05rem;
+  color: var(--ink);
+  background: none;
+  border: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+}
+
+.field input[type="text"]:focus,
+.field input[type="number"]:focus {
+  outline: none;
+  border-bottom-color: var(--accent);
+}
+
+.toggle-group {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.toggle-group input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.toggle-group label {
+  flex: 1;
+  text-align: center;
+  padding: 0.6rem 1rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin: 0;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.toggle-group input:checked + label {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--paper);
+}
+
+.field-honeypot {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.rsvp-submit {
+  width: 100%;
+  padding: 0.8rem 1.5rem;
+  font: inherit;
+  font-size: 0.9rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--paper);
+  background: var(--accent);
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.rsvp-submit:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.rsvp-status {
+  margin-top: 1.25rem;
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+.rsvp-status[data-state="error"] {
+  color: var(--accent);
+}
+
+.rsvp-form.is-hidden,
+.rsvp-status.is-hidden,
+.field-party.is-hidden {
+  display: none;
+}
