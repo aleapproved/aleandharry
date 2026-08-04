@@ -112,17 +112,6 @@ p {
   margin: 1.75rem auto;
 }
 
-.teaser {
-  margin-top: 3rem;
-  font-size: 0.95rem;
-}
-
-.teaser a {
-  text-decoration: none;
-  border-bottom: 1px solid var(--accent);
-  padding-bottom: 0.1rem;
-}
-
 .moment {
   max-width: 34rem;
   margin-top: 3rem;
