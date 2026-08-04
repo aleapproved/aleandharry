@@ -7,7 +7,7 @@
   <meta name="description" content="RSVP for Ale and Harry's wedding.">
   <link rel="canonical" href="https://aleandharry.com/rsvp.html">
 
-  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" href="/images/bellibolt-favicon.ico" sizes="any">
   <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
   <meta name="theme-color" content="#f7ecdd">
@@ -34,6 +34,25 @@
   <meta name="twitter:description" content="RSVP for Ale and Harry's wedding.">
   <meta name="twitter:image" content="https://aleandharry.com/images/og-image.jpg">
   <link rel="stylesheet" href="/styles.css">
+  <style>
+    :root {
+      --accent: #1c9c82;
+    }
+    :root[data-theme="dark"] {
+      --accent: #4fd8b8;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --accent: #4fd8b8;
+      }
+    }
+    .rsvp-mark {
+      width: 5.5rem;
+      height: auto;
+      margin: 0 auto 1.5rem;
+      display: block;
+    }
+  </style>
 </head>
 <body>
   <header class="site-header">
@@ -50,6 +69,7 @@
     </div>
   </header>
   <main>
+    <img class="rsvp-mark" src="/images/bellibolt-badge.png" alt="" aria-hidden="true">
     <p class="eyebrow">RSVP</p>
     <h1 style="font-size: clamp(2rem, 5vw, 3rem);">Let us know</h1>
     <div class="rule"></div>
