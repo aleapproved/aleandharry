@@ -28,8 +28,18 @@ WHITE_THRESHOLD = 238  # a pixel this bright on every channel counts as paper
 
 
 def cutout(path):
-    """Return an RGBA image with the paper background made transparent."""
-    rgb = np.array(Image.open(path).convert('RGB')).astype(np.int16)
+    """Return an RGBA image with the paper background made transparent.
+
+    Artwork that already carries an alpha channel is taken as-is — flooding it
+    would only re-derive a mask it already has, worse.
+    """
+    source = Image.open(path)
+    if source.mode in ('RGBA', 'LA') or 'transparency' in source.info:
+        rgba = source.convert('RGBA')
+        if np.array(rgba)[..., 3].min() < 255:
+            return rgba.crop(rgba.getbbox())
+
+    rgb = np.array(source.convert('RGB')).astype(np.int16)
     h, w = rgb.shape[:2]
 
     paper = (rgb >= WHITE_THRESHOLD).all(axis=2)

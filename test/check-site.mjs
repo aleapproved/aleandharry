@@ -33,6 +33,10 @@ try {
   for (const page of PAGES) {
     const html = await readFile(new URL(`../${page}.html`, import.meta.url), 'utf8');
     for (const m of html.matchAll(/(?:src|href)="(\/[^"]+)"/g)) referenced.add(m[1]);
+    // srcset lists extra files the src attribute never mentions.
+    for (const m of html.matchAll(/srcset="([^"]+)"/g)) {
+      for (const candidate of m[1].split(',')) referenced.add(candidate.trim().split(/\s+/)[0]);
+    }
   }
   const manifest = JSON.parse(await readFile(new URL('../site.webmanifest', import.meta.url), 'utf8'));
   for (const icon of manifest.icons) referenced.add(icon.src);
@@ -160,6 +164,7 @@ try {
     const page = await browser.newPage();
     await page.goto(`${base}/index.html`);
     for (const file of ['mudkip-badge.png', 'ditto-badge.png', 'bellibolt-badge.png',
+                        'chansey-badge.png', 'lapras-badge.png',
                         'solrock-icon.png', 'lunatone-icon.png']) {
       const holes = await page.evaluate(async (src) => {
         const img = new Image();

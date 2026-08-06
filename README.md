@@ -53,7 +53,14 @@ python3 tools/make-badge.py "images/mudkip (1).jpg" images/mudkip-badge.png --he
 python3 tools/make-badge.py images/solrock.jpg images/solrock-icon.png --canvas 108 108 --content-scale 0.885
 ```
 
-The source JPEGs in `images/` are inputs to this tool — don't delete them.
+Artwork that already has an alpha channel is used as-is; only white-background
+art gets flooded. The source images in `images/` are inputs to this tool —
+don't delete them.
+
+Photos on Hale ship at three widths (`-640`, `-960`, full) wired through
+`srcset`, so a phone doesn't download a desktop-sized file. If you add a photo,
+add the variants too — the asset check follows `srcset` and will fail on a
+missing candidate.
 
 ## Checks
 
