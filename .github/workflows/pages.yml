@@ -34,3 +34,8 @@ jobs:
           path: .
       - id: deployment
         uses: actions/deploy-pages@v4
+        with:
+          # Default is 10 minutes, which GitHub's publish step has been
+          # overrunning — the deployment reaches deployment_in_progress and
+          # then gets aborted mid-flight. Give it room rather than retrying.
+          timeout: 1800000
