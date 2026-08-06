@@ -109,13 +109,23 @@ missing candidate. Resize with:
 magick images/photo.jpg -resize 640x -strip -interlace JPEG -quality 82 images/photo-640.jpg
 ```
 
-`lightbox.js` opens any photo inside a `.moment` full size, and a second click
-on the photo goes to the file's own pixels and pans, which is the only way a
-wide photo or the map is any bigger than the column on a phone. It wraps each
-image in a button at load, so the markup stays a plain `figure` and a visitor
-without JavaScript still sees every photo at page size. Add it to a page with
-`<script src="/lightbox.js" defer></script>`; it does nothing on a page with
-no photos.
+`lightbox.js` enlarges any photo inside a `.moment` on a click. The header
+stays where it is and stays sharp; the photo grows into the space below it,
+over a thin wash of the page's own paper and a light blur, so it reads as the
+photo growing rather than as a viewer opening over the top. It is never
+cropped and never scrolls. A click anywhere, escape, or the close button puts
+it back.
+
+The script wraps each image in a button at load, so the markup stays a plain
+`figure` and a visitor without JavaScript still sees every photo at page size.
+It measures the header into `--header-h` on open, since the header is two rows
+on a phone. A phone gains least from all this, its photos already spanning the
+column, so the margin around the enlarged photo narrows to almost nothing
+there. Touch also gets a press and a bounce, which needs the empty
+`touchstart` listener in the script: iOS will not fire `:active` without one.
+
+Add it to a page with `<script src="/lightbox.js" defer></script>`; it does
+nothing on a page with no photos.
 
 ## Checks
 
@@ -137,7 +147,7 @@ things that are easy to break by accident:
 - dark mode resolves to the same accent via the OS setting and via the toggle
 - the RSVP confirmation is visible once the form is hidden on success
 - the guest-only fields reveal and hide with the attending choice
-- photos open full size, zoom past the screen, and close every way out
+- photos enlarge whole, keep the header visible, and close every way out
 - badge cutouts have no interior holes
 
 ## Deploying

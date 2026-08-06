@@ -230,10 +230,24 @@ try {
     check('the photo is whole, not cropped', Math.abs(shown.ratio - shown.natural) < 0.01,
       `${at}: shown ${shown.ratio}, actual ${shown.natural}`);
     check('the lightbox never scrolls', !shown.overflows, at);
-    check('the photo fills the screen it is given', shown.w >= width - 40 || shown.h >= 760,
-      `${at}: ${shown.w}x${shown.h}`);
-    check('it is larger than it was on the page', shown.w > shown.onPage,
+    // It has to be worth the click. A phone gains least, since the photos
+    // already span its column, so it only has to gain: a viewer that hands
+    // back the same size it took is the version this replaced.
+    check('it is larger than it was on the page', shown.w > shown.onPage * (width > 700 ? 1.25 : 1.05),
       `${at}: ${shown.w} enlarged, ${shown.onPage} on the page`);
+    check('the page still shows around the photo', shown.w < width - 8,
+      `${at}: ${shown.w} wide in ${width}`);
+
+    // The header is the point of the whole arrangement: the photo grows into
+    // the space under it and never covers it.
+    const header = await page.evaluate(() => {
+      const h = document.querySelector('.site-header').getBoundingClientRect();
+      const box = document.querySelector('.lightbox').getBoundingClientRect();
+      return { bottom: +h.bottom.toFixed(2), top: +box.top.toFixed(2), visible: h.top === 0 };
+    });
+    check('the header stays visible above the photo',
+      header.visible && header.top >= header.bottom,
+      `${at}: header ends at ${header.bottom}, photo area starts at ${header.top}`);
 
     // A click anywhere is the way out, the photo included: on a phone that is
     // the only thing a thumb reliably lands on.
@@ -254,6 +268,40 @@ try {
     await page.locator('.lightbox-close').click();
     check('the close button closes the lightbox',
       await page.evaluate(() => !document.querySelector('.lightbox').open), at);
+
+    await page.close();
+  }
+
+  // ---------------------------------------------------------------
+  // A thumb has no cursor to change and no hover to feel, so pressing a photo
+  // gives a little before it opens.
+  // ---------------------------------------------------------------
+  section('Touch');
+  {
+    const page = await browser.newPage({ viewport: { width: 390, height: 800 }, hasTouch: true });
+    await page.goto(`${base}/our-story.html`);
+
+    const bounce = await page.evaluate(() => {
+      const touch = [...document.styleSheets[0].cssRules]
+        .filter((r) => r.media && r.media.mediaText.includes('hover: none'))
+        .flatMap((r) => [...r.cssRules]);
+      const press = touch.find((r) => r.selectorText === '.moment img:active');
+      const rest = touch.find((r) => r.selectorText === '.moment img');
+      return { press: press?.style.transform, eased: rest?.style.transition };
+    });
+    check('a press scales the photo down', /scale\(0\.97\)/.test(bounce.press || ''),
+      `found ${bounce.press}`);
+    // Without the overshoot in the curve it is a shrink, not a bounce.
+    check('it springs back past its size', /cubic-bezier\(0\.34, 1\.56/.test(bounce.eased || ''),
+      `found ${bounce.eased}`);
+
+    // A tap still opens the photo, and the trigger is a real button under it.
+    await page.locator('.moment .zoom').first().tap();
+    check('tapping a photo opens it',
+      await page.evaluate(() => document.querySelector('.lightbox').open));
+    await page.locator('.lightbox-image').tap();
+    check('tapping it again closes it',
+      await page.evaluate(() => !document.querySelector('.lightbox').open));
 
     await page.close();
   }
