@@ -54,6 +54,14 @@ html, body {
   min-height: 100%;
 }
 
+/* Our Story is tall enough to scroll and RSVP usually isn't, so on any
+   browser with classic scrollbars the scrolling page lost ~15px of width
+   and its centred content sat half that to the left of the other pages'.
+   Reserving the gutter everywhere keeps the two pages aligned. */
+html {
+  scrollbar-gutter: stable;
+}
+
 body {
   margin: 0;
   display: flex;

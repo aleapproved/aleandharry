@@ -55,7 +55,9 @@ try {
 
       const headerHeights = new Set();
       const navTops = new Set();
+      const contentWidths = new Set();
       const rulePositions = {};
+      const ruleCentres = new Set();
 
       for (const name of PAGES) {
         const errors = [];
@@ -65,26 +67,40 @@ try {
         const m = await page.evaluate(() => {
           const el = (s) => document.querySelector(s);
           const toggle = el('.theme-toggle').getBoundingClientRect();
+          const rule = el('.rule').getBoundingClientRect();
           const root = document.documentElement;
           return {
             headerHeight: +el('.site-header').getBoundingClientRect().height.toFixed(2),
             navTop: +el('.site-header nav a').getBoundingClientRect().top.toFixed(2),
-            rule: +el('.rule').getBoundingClientRect().top.toFixed(2),
+            rule: +rule.top.toFixed(2),
+            ruleCentre: +(rule.left + rule.width / 2).toFixed(2),
+            // body, not documentElement: clientWidth on the root includes the
+            // reserved gutter, so it cannot see the width the content gets.
+            contentWidth: document.body.clientWidth,
+            gutter: getComputedStyle(root).scrollbarGutter,
             toggleW: +toggle.width.toFixed(2),
             toggleH: +toggle.height.toFixed(2),
-            overflow: root.scrollWidth - root.clientWidth,
+            scrollsSideways: root.scrollWidth > root.clientWidth,
             position: getComputedStyle(el('.site-header')).position,
           };
         });
 
         headerHeights.add(m.headerHeight);
         navTops.add(m.navTop);
+        contentWidths.add(m.contentWidth);
+        ruleCentres.add(m.ruleCentre);
         rulePositions[name] = m.rule;
+
+        // Without a reserved gutter, pages that scroll are narrower than
+        // pages that don't wherever scrollbars take up space, which pulls
+        // their centred content sideways. Headless uses overlay scrollbars
+        // and cannot show the shift, so assert the guarantee directly.
+        check('scrollbar gutter is reserved', m.gutter === 'stable', `${at}/${name}: ${m.gutter}`);
 
         check('no page errors', errors.length === 0, `${at}/${name}: ${errors[0]}`);
         // A shrunk toggle stops being a circle — the mobile-overflow tell.
         check('toggle is circular', m.toggleW === m.toggleH, `${at}/${name}: ${m.toggleW}x${m.toggleH}`);
-        check('no horizontal overflow', m.overflow === 0, `${at}/${name}: ${m.overflow}px`);
+        check('does not scroll sideways', !m.scrollsSideways, `${at}/${name}`);
         check('header is sticky', m.position === 'sticky', `${at}/${name}: ${m.position}`);
       }
 
@@ -99,6 +115,8 @@ try {
         rulePositions['our-story'] === rulePositions['rsvp'],
         `${at}: our-story ${rulePositions['our-story']} vs rsvp ${rulePositions['rsvp']}`
       );
+      check('content width matches across pages', contentWidths.size === 1, `${at}: ${[...contentWidths].join(', ')}`);
+      check('rule is centred on the same pixel across pages', ruleCentres.size === 1, `${at}: ${[...ruleCentres].join(', ')}`);
 
       await context.close();
     }
