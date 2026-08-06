@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-paper="#f7ecdd" data-paper-dark="#1b1830">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,11 +14,12 @@
   <script>
     (function () {
       try {
+        var root = document.documentElement;
         var saved = localStorage.getItem('theme');
         var theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-        document.documentElement.setAttribute('data-theme', theme);
+        root.setAttribute('data-theme', theme);
         var meta = document.querySelector('meta[name="theme-color"]');
-        if (meta) meta.setAttribute('content', theme === 'dark' ? '#1b1830' : '#f7ecdd');
+        if (meta) meta.setAttribute('content', theme === 'dark' ? root.dataset.paperDark : root.dataset.paper);
       } catch (e) {}
     })();
   </script>
@@ -63,10 +64,12 @@
     <p class="eyebrow">We're getting married</p>
     <h1>Ale<span class="amp">&amp;</span>Harry</h1>
     <div class="rule"></div>
-    <p class="date-line"><time datetime="2028-06-16">Friday 16 June 2028</time></p>
+    <p class="date-line"><time datetime="2028-06-16">Friday, 16 June 2028</time></p>
     <p class="countdown" id="countdown" data-target="2028-06-16T00:00:00+01:00"></p>
-    <p class="note tbc">Provisional &mdash; we&rsquo;ll confirm once the venue is booked.</p>
   </main>
+  <footer class="site-footer">
+    <p>Any questions, ask us: <a href="mailto:rsvp@aleandharry.com">rsvp@aleandharry.com</a></p>
+  </footer>
   <script src="/theme-toggle.js" defer></script>
   <script src="/countdown.js" defer></script>
 </body>

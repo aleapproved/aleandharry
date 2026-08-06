@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', function () {
           el.classList.add('is-hidden');
         });
         form.classList.add('is-hidden');
-        showStatus("Thank you — we've got your RSVP.", 'success');
+        showStatus("Thank you, we've got your RSVP.", 'success');
       })
       .catch(function (err) {
         showStatus(err.message || 'Something went wrong. Please try again.', 'error');

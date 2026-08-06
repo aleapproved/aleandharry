@@ -1,6 +1,9 @@
+// Each page is a different colour, so the browser chrome cannot be hardcoded
+// here: the two papers come off <html>, alongside the pre-paint script's.
 function syncThemeColorMeta(theme) {
+  var root = document.documentElement;
   var meta = document.querySelector('meta[name="theme-color"]');
-  if (meta) meta.setAttribute('content', theme === 'dark' ? '#1b1830' : '#f7ecdd');
+  if (meta) meta.setAttribute('content', theme === 'dark' ? root.dataset.paperDark : root.dataset.paper);
 }
 
 document.addEventListener('DOMContentLoaded', function () {

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-paper="#e9f4ef" data-paper-dark="#0f2420">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,15 +10,16 @@
   <link rel="icon" href="/images/bellibolt-favicon.ico" sizes="any">
   <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
-  <meta name="theme-color" content="#f7ecdd">
+  <meta name="theme-color" content="#e9f4ef">
   <script>
     (function () {
       try {
+        var root = document.documentElement;
         var saved = localStorage.getItem('theme');
         var theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-        document.documentElement.setAttribute('data-theme', theme);
+        root.setAttribute('data-theme', theme);
         var meta = document.querySelector('meta[name="theme-color"]');
-        if (meta) meta.setAttribute('content', theme === 'dark' ? '#1b1830' : '#f7ecdd');
+        if (meta) meta.setAttribute('content', theme === 'dark' ? root.dataset.paperDark : root.dataset.paper);
       } catch (e) {}
     })();
   </script>
@@ -61,9 +62,7 @@
   </header>
   <main>
     <img class="page-mark" src="/images/bellibolt-badge.png" alt="" aria-hidden="true" width="262" height="264">
-    <p class="eyebrow">RSVP</p>
-    <h1 class="page-title">Let us know</h1>
-    <div class="rule"></div>
+    <h1 class="page-title">RSVP</h1>
 
     <form id="rsvpForm" class="rsvp-form" novalidate>
       <div class="field">
@@ -122,6 +121,9 @@
          inside it would be hidden along with it. -->
     <p class="rsvp-status is-hidden" id="rsvpStatus" role="status"></p>
   </main>
+  <footer class="site-footer">
+    <p>Any questions, ask us: <a href="mailto:rsvp@aleandharry.com">rsvp@aleandharry.com</a></p>
+  </footer>
   <script src="/theme-toggle.js" defer></script>
   <script src="/rsvp.js" defer></script>
 </body>

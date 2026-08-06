@@ -60,7 +60,7 @@ try {
       const headerHeights = new Set();
       const navTops = new Set();
       const contentWidths = new Set();
-      const rulePositions = {};
+      const titlePositions = {};
       const ruleCentres = new Set();
 
       for (const name of PAGES) {
@@ -71,14 +71,21 @@ try {
         const m = await page.evaluate(() => {
           const el = (s) => document.querySelector(s);
           const toggle = el('.theme-toggle').getBoundingClientRect();
-          const rule = el('.rule').getBoundingClientRect();
+          // Only the homepage and the 404 still carry a rule; interior pages
+          // open on their title alone.
+          const rule = el('.rule')?.getBoundingClientRect();
+          const title = el('h1.page-title')?.getBoundingClientRect();
           const root = document.documentElement;
           return {
             headerHeight: +el('.site-header').getBoundingClientRect().height.toFixed(2),
             navTop: +el('.site-header nav a').getBoundingClientRect().top.toFixed(2),
-            rule: +rule.top.toFixed(2),
+            title: title ? +title.top.toFixed(2) : null,
             hasMark: !!el('.page-mark'),
-            ruleCentre: +(rule.left + rule.width / 2).toFixed(2),
+            ruleCentre: rule ? +(rule.left + rule.width / 2).toFixed(2) : null,
+            paper: getComputedStyle(document.body).getPropertyValue('--paper').trim(),
+            themeColor: el('meta[name="theme-color"]').content,
+            declaredPaper: root.dataset[root.dataset.theme === 'dark' ? 'paperDark' : 'paper'],
+            email: el('.site-footer a[href^="mailto:"]')?.getAttribute('href'),
             // body, not documentElement: clientWidth on the root includes the
             // reserved gutter, so it cannot see the width the content gets.
             contentWidth: document.body.clientWidth,
@@ -93,8 +100,18 @@ try {
         headerHeights.add(m.headerHeight);
         navTops.add(m.navTop);
         contentWidths.add(m.contentWidth);
-        ruleCentres.add(m.ruleCentre);
-        rulePositions[name] = { top: m.rule, hasMark: m.hasMark };
+        if (m.ruleCentre !== null) ruleCentres.add(m.ruleCentre);
+        titlePositions[name] = { top: m.title, hasMark: m.hasMark };
+
+        // The browser chrome is painted from <html>'s two papers before the
+        // stylesheet loads, so a page whose palette moved on without them
+        // flashes the wrong colour behind the address bar.
+        check('theme-color matches the page palette', m.themeColor === m.paper,
+          `${at}/${name}: chrome ${m.themeColor}, page ${m.paper}`);
+        check('theme-color matches what <html> declares', m.themeColor === m.declaredPaper,
+          `${at}/${name}: meta ${m.themeColor}, html ${m.declaredPaper}`);
+        check('every page offers a way to reach us',
+          m.email === 'mailto:rsvp@aleandharry.com', `${at}/${name}: ${m.email}`);
 
         // Without a reserved gutter, pages that scroll are narrower than
         // pages that don't wherever scrollbars take up space, which pulls
@@ -113,17 +130,18 @@ try {
       // The current-page underline must occupy space on every link, or the
       // nav sits a pixel or two higher on the pages that have one.
       check('nav sits on the same line across pages', navTops.size === 1, `${at}: ${[...navTops].join(', ')}`);
-      // Interior pages open with an optional mark, an eyebrow, a title and a
-      // rule. Pages carrying a mark sit lower by exactly the mark's height, so
-      // compare like with like: the rule must land on the same pixel within
-      // each group, or those pages look misaligned against each other.
+      // Interior pages open with an optional mark and then their title, and
+      // nothing else. Pages carrying a mark sit lower by exactly the mark's
+      // height, so compare like with like: the title must land on the same
+      // pixel within each group, or those pages look misaligned against
+      // each other when you move between them.
       for (const withMark of [true, false]) {
         const group = ['our-story', 'the-day', 'travel', 'rsvp']
-          .filter((n) => rulePositions[n].hasMark === withMark);
+          .filter((n) => titlePositions[n].hasMark === withMark);
         if (group.length < 2) continue;
-        const tops = group.map((n) => rulePositions[n].top);
+        const tops = group.map((n) => titlePositions[n].top);
         check(
-          `rule aligns across interior pages ${withMark ? 'with' : 'without'} a mark`,
+          `title aligns across interior pages ${withMark ? 'with' : 'without'} a mark`,
           new Set(tops).size === 1,
           `${at}: ${group.map((n, i) => `${n} ${tops[i]}`).join(', ')}`
         );

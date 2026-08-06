@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-paper="#edf1f8" data-paper-dark="#141a2c">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,15 +10,16 @@
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
-  <meta name="theme-color" content="#f7ecdd">
+  <meta name="theme-color" content="#edf1f8">
   <script>
     (function () {
       try {
+        var root = document.documentElement;
         var saved = localStorage.getItem('theme');
         var theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-        document.documentElement.setAttribute('data-theme', theme);
+        root.setAttribute('data-theme', theme);
         var meta = document.querySelector('meta[name="theme-color"]');
-        if (meta) meta.setAttribute('content', theme === 'dark' ? '#1b1830' : '#f7ecdd');
+        if (meta) meta.setAttribute('content', theme === 'dark' ? root.dataset.paperDark : root.dataset.paper);
       } catch (e) {}
     })();
   </script>
@@ -42,7 +43,7 @@
   <link rel="preload" href="/fonts/InterVariable.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/styles.css">
 </head>
-<body>
+<body data-accent="lapras">
   <header class="site-header">
     <a href="/" class="brand">Ale <span class="amp">&amp;</span> Harry</a>
     <div class="nav-group">
@@ -61,13 +62,11 @@
   </header>
   <main>
     <img class="page-mark" src="/images/lapras-badge.png" alt="" aria-hidden="true" width="274" height="264">
-    <p class="eyebrow">Travel</p>
-    <h1 class="page-title">Getting there</h1>
-    <div class="rule"></div>
+    <h1 class="page-title">Travel</h1>
 
     <section class="info">
       <h2>The short version</h2>
-      <p>Nothing is booked yet, so there is nothing to book around. This page will fill in once the venue is chosen &mdash; and we&rsquo;ll make sure that happens with plenty of notice for anyone travelling.</p>
+      <p>Nothing is booked yet, so there is nothing for you to arrange around. This page will fill in once the venue is chosen, with plenty of notice for anyone travelling.</p>
     </section>
 
     <section class="info">
@@ -87,7 +86,7 @@
 
     <section class="info">
       <h2>Getting home</h2>
-      <p class="tbc">To be confirmed &mdash; taxis, parking, and whether we&rsquo;re putting on anything ourselves.</p>
+      <p class="tbc">To be confirmed: taxis, parking, and whether we&rsquo;re putting on anything ourselves.</p>
     </section>
 
     <section class="info">
@@ -95,6 +94,9 @@
       <p>If you&rsquo;re travelling a long way and want to plan early, tell us and we&rsquo;ll keep you posted directly rather than making you check back.</p>
     </section>
   </main>
+  <footer class="site-footer">
+    <p>Any questions, ask us: <a href="mailto:rsvp@aleandharry.com">rsvp@aleandharry.com</a></p>
+  </footer>
   <script src="/theme-toggle.js" defer></script>
 </body>
 </html>

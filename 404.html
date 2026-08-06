@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-paper="#f7ecdd" data-paper-dark="#1b1830">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,11 +12,12 @@
   <script>
     (function () {
       try {
+        var root = document.documentElement;
         var saved = localStorage.getItem('theme');
         var theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-        document.documentElement.setAttribute('data-theme', theme);
+        root.setAttribute('data-theme', theme);
         var meta = document.querySelector('meta[name="theme-color"]');
-        if (meta) meta.setAttribute('content', theme === 'dark' ? '#1b1830' : '#f7ecdd');
+        if (meta) meta.setAttribute('content', theme === 'dark' ? root.dataset.paperDark : root.dataset.paper);
       } catch (e) {}
     })();
   </script>
@@ -46,6 +47,9 @@
     <div class="rule"></div>
     <p><a href="/">Take me back</a></p>
   </main>
+  <footer class="site-footer">
+    <p>Any questions, ask us: <a href="mailto:rsvp@aleandharry.com">rsvp@aleandharry.com</a></p>
+  </footer>
   <script src="/theme-toggle.js" defer></script>
 </body>
 </html>

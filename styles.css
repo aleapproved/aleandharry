@@ -8,51 +8,121 @@
   font-display: swap;
 }
 
-/* Light palette (Solrock). */
 :root {
   color-scheme: light;
-  --ink: #2b2320;
-  --ink-soft: #6b5c50;
-  --paper: #f7ecdd;
-  --accent: #d9662e;
-  --shadow: 47 42 38;
   --mark-size: 5.5rem;
 }
 
-/* Dark palette (Lunatone). The two blocks below must stay in sync: the first
-   serves the manual toggle, the second serves an untouched dark-OS visitor. */
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --ink: #ece7f5;
-  --ink-soft: #b3a9cf;
-  --paper: #1b1830;
-  --accent: #9b7fd4;
-  --shadow: 8 5 20;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     color-scheme: dark;
-    --ink: #ece7f5;
-    --ink-soft: #b3a9cf;
-    --paper: #1b1830;
-    --accent: #9b7fd4;
-    --shadow: 8 5 20;
   }
 }
 
-/* The RSVP page runs a Bellibolt accent over the same neutrals. */
-body[data-accent="bellibolt"] {
-  --accent: #1c9c82;
+/* Every page is coloured by its Pokémon, in both schemes. Each palette below
+   names its two versions once, as -l and -d pairs; the three blocks after them
+   are the only place that picks between the two, so adding a page means adding
+   one block and nothing else. Defaults are Solrock by day, Lunatone by night. */
+body {
+  --ink-l: #2b2320;
+  --ink-soft-l: #6b5c50;
+  --paper-l: #f7ecdd;
+  --accent-l: #d9662e;
+  --shadow-l: 47 42 38;
+
+  --ink-d: #ece7f5;
+  --ink-soft-d: #b3a9cf;
+  --paper-d: #1b1830;
+  --accent-d: #9b7fd4;
+  --shadow-d: 8 5 20;
 }
 
-:root[data-theme="dark"] body[data-accent="bellibolt"] {
-  --accent: #4fd8b8;
+/* Hale is the two of us: Mudkip blue on Ditto lilac. */
+body[data-accent="hale"] {
+  --ink-l: #241f30;
+  --ink-soft-l: #5c5470;
+  --paper-l: #f3eef9;
+  --accent-l: #2f6ea8;
+  --shadow-l: 36 31 48;
+
+  --ink-d: #eae6f6;
+  --ink-soft-d: #b0a8ca;
+  --paper-d: #1a1630;
+  --accent-d: #82c4f2;
+  --shadow-d: 8 5 20;
+}
+
+body[data-accent="chansey"] {
+  --ink-l: #2e1f26;
+  --ink-soft-l: #6e5a60;
+  --paper-l: #fbeff1;
+  --accent-l: #b04566;
+  --shadow-l: 46 31 38;
+
+  --ink-d: #f6e8ec;
+  --ink-soft-d: #cfb2bc;
+  --paper-d: #2a1a22;
+  --accent-d: #f2a0b8;
+  --shadow-d: 20 8 12;
+}
+
+body[data-accent="lapras"] {
+  --ink-l: #1f2530;
+  --ink-soft-l: #545e6e;
+  --paper-l: #edf1f8;
+  --accent-l: #45689f;
+  --shadow-l: 31 37 48;
+
+  --ink-d: #e6ebf6;
+  --ink-soft-d: #a9b4cc;
+  --paper-d: #141a2c;
+  --accent-d: #93b6ea;
+  --shadow-d: 6 8 18;
+}
+
+body[data-accent="bellibolt"] {
+  --ink-l: #1c2a26;
+  --ink-soft-l: #506059;
+  --paper-l: #e9f4ef;
+  --accent-l: #17836e;
+  --shadow-l: 28 42 38;
+
+  --ink-d: #e4f2ec;
+  --ink-soft-d: #a3c2b8;
+  --paper-d: #0f2420;
+  --accent-d: #4fd8b8;
+  --shadow-d: 4 16 12;
+}
+
+body {
+  --ink: var(--ink-l);
+  --ink-soft: var(--ink-soft-l);
+  --paper: var(--paper-l);
+  --accent: var(--accent-l);
+  --shadow: var(--shadow-l);
+}
+
+/* These two must stay in sync: the first serves the manual toggle, the second
+   an untouched dark-OS visitor. */
+:root[data-theme="dark"] body {
+  --ink: var(--ink-d);
+  --ink-soft: var(--ink-soft-d);
+  --paper: var(--paper-d);
+  --accent: var(--accent-d);
+  --shadow: var(--shadow-d);
 }
 
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) body[data-accent="bellibolt"] {
-    --accent: #4fd8b8;
+  :root:not([data-theme="light"]) body {
+    --ink: var(--ink-d);
+    --ink-soft: var(--ink-soft-d);
+    --paper: var(--paper-d);
+    --accent: var(--accent-d);
+    --shadow: var(--shadow-d);
   }
 }
 
@@ -192,7 +262,7 @@ main.centered {
 }
 
 h1 {
-  font-size: clamp(2.5rem, 6vw, 4rem);
+  font-size: clamp(2rem, 9vw, 4rem);
   font-weight: 300;
   letter-spacing: -0.02em;
   margin: 0 0 1rem;
@@ -200,11 +270,10 @@ h1 {
 }
 
 h1 .amp {
-  display: block;
   color: var(--accent);
   font-size: 0.6em;
   font-weight: 300;
-  margin: 0.25em 0;
+  margin: 0 0.2em;
 }
 
 h1.page-title {
@@ -300,8 +369,10 @@ p.quote {
   margin-top: 3rem;
 }
 
+/* Interior pages open straight from the title with no rule under it, so the
+   first block carries the gap the rule used to hold open. */
 .moment:first-of-type {
-  margin-top: 3.5rem;
+  margin-top: 4.5rem;
 }
 
 .moment .eyebrow {
@@ -325,7 +396,7 @@ p.quote {
 .rsvp-form {
   width: 100%;
   max-width: 26rem;
-  margin-top: 3rem;
+  margin-top: 4rem;
   text-align: left;
 }
 
@@ -469,7 +540,7 @@ p.quote {
 
 /* Once the form is gone the thank-you takes over its place in the rhythm. */
 .rsvp-form.is-hidden + .rsvp-status {
-  margin-top: 3rem;
+  margin-top: 4rem;
 }
 
 .rsvp-form.is-hidden,
@@ -502,9 +573,23 @@ p.quote {
   opacity: 0.85;
 }
 
-.note {
-  margin-top: 0.75rem;
-  font-size: 0.9rem;
+/* One way to reach us, on every page, below whatever the page is about. */
+.site-footer {
+  padding: 2.5rem 2rem 3rem;
+  text-align: center;
+  border-top: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+.site-footer p {
+  margin: 0 auto;
+  font-size: 0.85rem;
+  letter-spacing: 0.02em;
+}
+
+.site-footer a {
+  color: var(--accent);
+  text-decoration-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  text-underline-offset: 0.25em;
 }
 
 /* Stacked information sections on The Day and Travel. */
@@ -516,7 +601,7 @@ p.quote {
 }
 
 .info:first-of-type {
-  margin-top: 3rem;
+  margin-top: 4rem;
 }
 
 .info h2 {
@@ -609,9 +694,14 @@ p.quote {
     padding: 2.5rem 1.25rem 3.5rem;
   }
 
+  .site-footer {
+    padding: 2rem 1.25rem 2.5rem;
+  }
+
   .rsvp-form,
+  .info:first-of-type,
   .moment:first-of-type {
-    margin-top: 2.5rem;
+    margin-top: 3rem;
   }
 }
 
