@@ -58,6 +58,25 @@ jobs:
           rm -rf _site/.github _site/test _site/tools _site/worker
           rm -f _site/*.md _site/package.json _site/package-lock.json _site/.gitignore
 
+      # The pages revalidate on every load but the stylesheet and the scripts
+      # are cached for four hours, so a deploy that changes both left visitors
+      # running new markup against old CSS. It shipped photos wrapped in
+      # unstyled buttons and an unstyled dialog: little grey boxes, and a white
+      # one with scrollbars. Stamping the content hash into the URL makes the
+      # two land together, since a page can only ask for the CSS it was built
+      # with. Local files keep plain names; only what is published is stamped.
+      - name: Version the assets
+        run: |
+          for asset in styles.css theme-toggle.js countdown.js rsvp.js lightbox.js; do
+            v=$(sha256sum "_site/$asset" | cut -c1-10)
+            sed -i "s|\"/$asset\"|\"/$asset?v=$v\"|g" _site/*.html
+          done
+          # A page that still asks for a bare name would be the same bug again.
+          if grep -lE '"/(styles\.css|[a-z-]+\.js)"' _site/*.html; then
+            echo "::error::the files above reference an unversioned asset"
+            exit 1
+          fi
+
       - uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}

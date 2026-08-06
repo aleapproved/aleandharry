@@ -210,22 +210,35 @@ try {
     check('locking the page does not change its width',
       await page.evaluate(() => document.body.clientWidth) === widthBefore, at);
 
-    // Fitted, a landscape photo on a phone is barely wider than it was in the
-    // column, so clicking it has to go to the file's own pixels.
-    const fitted = await page.evaluate(() => document.querySelector('.lightbox-image').clientWidth);
-    await page.locator('.lightbox-image').click();
-    const zoomed = await page.evaluate(() => document.querySelector('.lightbox-image').clientWidth);
-    check('clicking the photo zooms it past the screen', zoomed > fitted && zoomed > width,
-      `${at}: ${fitted}px fitted, ${zoomed}px zoomed`);
-    check('the zoomed photo stays open', await page.evaluate(() => document.querySelector('.lightbox').open), at);
-    await page.locator('.lightbox-image').click({ position: { x: 5, y: 5 } });
-    check('clicking again returns it to the screen',
-      await page.evaluate(() => document.querySelector('.lightbox-image').clientWidth) === fitted, at);
+    // The photo is shown whole and larger than it was on the page. It must
+    // never be cropped or put behind a scrollbar: an earlier version panned
+    // around the full-size file, which is not what enlarging a photo means.
+    const shown = await page.evaluate(() => {
+      const img = document.querySelector('.lightbox-image');
+      const box = document.querySelector('.lightbox');
+      return {
+        w: img.clientWidth,
+        h: img.clientHeight,
+        ratio: +(img.clientWidth / img.clientHeight).toFixed(3),
+        natural: +(img.naturalWidth / img.naturalHeight).toFixed(3),
+        overflows: box.scrollWidth > box.clientWidth || box.scrollHeight > box.clientHeight,
+        onPage: document.querySelector('.moment img').clientWidth,
+      };
+    });
+    // Rounded to whole pixels, so compare the shape rather than demand it to
+    // the third decimal. Cropping would be off by far more than this.
+    check('the photo is whole, not cropped', Math.abs(shown.ratio - shown.natural) < 0.01,
+      `${at}: shown ${shown.ratio}, actual ${shown.natural}`);
+    check('the lightbox never scrolls', !shown.overflows, at);
+    check('the photo fills the screen it is given', shown.w >= width - 40 || shown.h >= 760,
+      `${at}: ${shown.w}x${shown.h}`);
+    check('it is larger than it was on the page', shown.w > shown.onPage,
+      `${at}: ${shown.w} enlarged, ${shown.onPage} on the page`);
 
-    // The surface around the photo is a way out, which is most of the screen
-    // on a phone and the only thing a thumb reliably lands on.
-    await page.locator('.lightbox-stage').click({ position: { x: 2, y: 2 } });
-    check('clicking beside the photo closes the lightbox',
+    // A click anywhere is the way out, the photo included: on a phone that is
+    // the only thing a thumb reliably lands on.
+    await page.locator('.lightbox-image').click();
+    check('clicking the photo closes the lightbox',
       await page.evaluate(() => !document.querySelector('.lightbox').open), at);
 
     await page.locator('.moment .zoom').first().click();

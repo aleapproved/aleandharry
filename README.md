@@ -149,6 +149,16 @@ needs one repo secret, `CLOUDFLARE_API_TOKEN`, with Cloudflare Pages edit
 rights; the account ID is in the workflow, since on its own it authorises
 nothing.
 
+The deploy stamps a content hash into the URL of the stylesheet and each
+script as it stages them, so the pages ask for `/styles.css?v=1a2b3c4d5e`.
+Pages revalidate on every load but assets are cached for four hours, and
+without this a deploy that changed both left visitors running new markup
+against old CSS for the rest of the afternoon. It cost an afternoon once:
+photos wrapped in buttons the cached stylesheet knew nothing about rendered
+as grey boxes. The files keep their plain names in the repo, so nothing about
+working locally changes, and the deploy fails if a page slips through still
+asking for an unstamped name.
+
 The deploy stays here rather than moving to Cloudflare Pages' own Git
 integration, which would publish the moment you push and cannot be made to
 wait for a check. Gating it there would mean running the checks in the Pages
