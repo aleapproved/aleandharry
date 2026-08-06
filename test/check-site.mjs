@@ -174,6 +174,78 @@ try {
   }
 
   // ---------------------------------------------------------------
+  // Photos enlarge on a click. The parts worth pinning down are the ones
+  // that are easy to lose: the keyboard route in, the full-size file rather
+  // than the phone-sized one, and every way back out.
+  // ---------------------------------------------------------------
+  section('Lightbox');
+  for (const width of [1280, 390]) {
+    const page = await browser.newPage({ viewport: { width, height: 800 } });
+    await page.goto(`${base}/our-story.html`);
+    const at = `${width}px`;
+
+    const photos = page.locator('.moment img');
+    const count = await photos.count();
+    check('every photo is clickable', count > 0
+      && (await page.locator('.moment .zoom > img').count()) === count, `${at}: ${count} photos`);
+
+    const widthBefore = await page.evaluate(() => document.body.clientWidth);
+    await page.locator('.moment .zoom').first().click();
+    const open = await page.evaluate(() => {
+      const d = document.querySelector('.lightbox');
+      return { open: d.open, src: d.querySelector('.lightbox-image').getAttribute('src') };
+    });
+    check('clicking a photo opens the lightbox', open.open, at);
+    // A -640 or -960 candidate here means the enlarged view is an upscale
+    // of the thumbnail the column happened to be served.
+    check('lightbox shows the full-size file', /firstdatemap\.png$/.test(open.src), `${at}: ${open.src}`);
+
+    // The page behind must not scroll away under the overlay, and holding it
+    // still must not narrow it either, or everything shifts on open.
+    const scrollBefore = await page.evaluate(() => window.scrollY);
+    await page.mouse.wheel(0, 400);
+    await page.waitForTimeout(100);
+    check('page does not scroll behind the lightbox',
+      await page.evaluate(() => window.scrollY) === scrollBefore, at);
+    check('locking the page does not change its width',
+      await page.evaluate(() => document.body.clientWidth) === widthBefore, at);
+
+    // Fitted, a landscape photo on a phone is barely wider than it was in the
+    // column, so clicking it has to go to the file's own pixels.
+    const fitted = await page.evaluate(() => document.querySelector('.lightbox-image').clientWidth);
+    await page.locator('.lightbox-image').click();
+    const zoomed = await page.evaluate(() => document.querySelector('.lightbox-image').clientWidth);
+    check('clicking the photo zooms it past the screen', zoomed > fitted && zoomed > width,
+      `${at}: ${fitted}px fitted, ${zoomed}px zoomed`);
+    check('the zoomed photo stays open', await page.evaluate(() => document.querySelector('.lightbox').open), at);
+    await page.locator('.lightbox-image').click({ position: { x: 5, y: 5 } });
+    check('clicking again returns it to the screen',
+      await page.evaluate(() => document.querySelector('.lightbox-image').clientWidth) === fitted, at);
+
+    // The surface around the photo is a way out, which is most of the screen
+    // on a phone and the only thing a thumb reliably lands on.
+    await page.locator('.lightbox-stage').click({ position: { x: 2, y: 2 } });
+    check('clicking beside the photo closes the lightbox',
+      await page.evaluate(() => !document.querySelector('.lightbox').open), at);
+
+    await page.locator('.moment .zoom').first().click();
+    await page.keyboard.press('Escape');
+    check('escape closes the lightbox',
+      await page.evaluate(() => !document.querySelector('.lightbox').open), at);
+    check('focus returns to the photo that was opened',
+      await page.evaluate(() => document.activeElement?.classList.contains('zoom')), at);
+
+    // Keyboard: the wrapper is a real button, so Enter opens it.
+    await page.keyboard.press('Enter');
+    check('enter opens the lightbox', await page.evaluate(() => document.querySelector('.lightbox').open), at);
+    await page.locator('.lightbox-close').click();
+    check('the close button closes the lightbox',
+      await page.evaluate(() => !document.querySelector('.lightbox').open), at);
+
+    await page.close();
+  }
+
+  // ---------------------------------------------------------------
   // Cutting a character out of its white artwork by matching colour
   // punches holes wherever the drawing contains a light or a
   // compression-speckled pixel. They are invisible on the cream page and

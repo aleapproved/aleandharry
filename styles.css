@@ -11,6 +11,8 @@
 :root {
   color-scheme: light;
   --mark-size: 5.5rem;
+  /* One colour for everything the lightbox covers the page with. */
+  --overlay: #0c0918;
 }
 
 :root[data-theme="dark"] {
@@ -142,6 +144,15 @@ html {
   scrollbar-gutter: stable;
 }
 
+/* Set while the lightbox is open. The gutter above stays reserved, so the
+   page underneath does not jump sideways as the scrollbar goes. That strip
+   lies outside both the dialog and its backdrop, and would be the only lit
+   thing on the screen, so the canvas behind it takes the overlay colour. */
+html.is-locked {
+  overflow: hidden;
+  background: var(--overlay);
+}
+
 body {
   margin: 0;
   display: flex;
@@ -269,11 +280,13 @@ h1 {
   line-height: 1.15;
 }
 
+/* The ampersand is set at the same size as the names either side of it, so
+   only colour marks it out. Its margin is what the old smaller version came
+   to once its own font-size was applied, which keeps the spacing as it was. */
 h1 .amp {
   color: var(--accent);
-  font-size: 0.6em;
   font-weight: 300;
-  margin: 0 0.2em;
+  margin: 0 0.12em;
 }
 
 h1.page-title {
@@ -385,6 +398,109 @@ p.quote {
   display: block;
   border-radius: 4px;
   box-shadow: 0 1.5rem 3rem -1.5rem rgb(var(--shadow) / 0.45);
+}
+
+/* lightbox.js wraps each photo in this button. It has to leave the figure
+   looking exactly as it did, so everything a button brings with it goes. */
+.moment .zoom {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: none;
+  font: inherit;
+  cursor: zoom-in;
+}
+
+/* The overlay is dark in both schemes. A photo shows best against something
+   near black, and the paper colours are the page, not a viewer. */
+.lightbox {
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  max-height: none;
+  padding: 0;
+  border: none;
+  background: var(--overlay);
+  opacity: 0;
+  transition: opacity 0.2s ease, overlay 0.2s ease allow-discrete, display 0.2s ease allow-discrete;
+}
+
+/* Scoped to [open] so the browser's own rule still hides a closed dialog. */
+.lightbox[open] {
+  display: block;
+  opacity: 1;
+}
+
+@starting-style {
+  .lightbox[open] {
+    opacity: 0;
+  }
+}
+
+/* Older browsers inherit nothing into ::backdrop, hence the fallback: the
+   variable is the same colour, and this rule must not end up transparent. */
+.lightbox::backdrop {
+  background: var(--overlay, #0c0918);
+}
+
+.lightbox-stage {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  padding: 1.25rem;
+  overflow: auto;
+  cursor: zoom-out;
+  /* margin: auto on the photo rather than centring the flex line: a centred
+     line that overflows cannot be scrolled back to its top left corner. */
+}
+
+.lightbox-image {
+  margin: auto;
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 4px;
+}
+
+/* Fitted to the screen a wide photo gains almost nothing on a phone, so a
+   click takes it to its own pixels and the stage pans. */
+.lightbox.is-zoomed .lightbox-image {
+  max-width: none;
+  max-height: none;
+  border-radius: 0;
+}
+
+.lightbox-close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  font: inherit;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: #f2eefb;
+  background: rgb(8 5 20 / 0.55);
+  border: 1px solid rgb(242 238 251 / 0.35);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+@media (hover: hover) {
+  .lightbox-close:hover {
+    background: rgb(242 238 251 / 0.22);
+  }
+}
+
+.lightbox-close:focus-visible {
+  outline: 2px solid #f2eefb;
+  outline-offset: 3px;
 }
 
 .moment figcaption {
@@ -549,8 +665,10 @@ p.quote {
   display: none;
 }
 
-/* Homepage date and countdown. */
+/* Homepage date and countdown. The homepage has no rule under the names, so
+   the date carries the gap the rule used to hold open. */
 .date-line {
+  margin-top: 2.5rem;
   font-size: 1.15rem;
   color: var(--ink);
   letter-spacing: 0.02em;
@@ -702,6 +820,11 @@ p.quote {
   .info:first-of-type,
   .moment:first-of-type {
     margin-top: 3rem;
+  }
+
+  /* Every pixel of a phone screen counts towards the enlarged photo. */
+  .lightbox-stage {
+    padding: 0.75rem;
   }
 }
 

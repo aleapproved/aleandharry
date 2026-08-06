@@ -103,7 +103,19 @@ so don't delete them.
 Photos on Hale ship at three widths (`-640`, `-960`, full) wired through
 `srcset`, so a phone doesn't download a desktop-sized file. If you add a photo,
 add the variants too: the asset check follows `srcset` and will fail on a
-missing candidate.
+missing candidate. Resize with:
+
+```bash
+magick images/photo.jpg -resize 640x -strip -interlace JPEG -quality 82 images/photo-640.jpg
+```
+
+`lightbox.js` opens any photo inside a `.moment` full size, and a second click
+on the photo goes to the file's own pixels and pans, which is the only way a
+wide photo or the map is any bigger than the column on a phone. It wraps each
+image in a button at load, so the markup stays a plain `figure` and a visitor
+without JavaScript still sees every photo at page size. Add it to a page with
+`<script src="/lightbox.js" defer></script>`; it does nothing on a page with
+no photos.
 
 ## Checks
 
@@ -125,6 +137,7 @@ things that are easy to break by accident:
 - dark mode resolves to the same accent via the OS setting and via the toggle
 - the RSVP confirmation is visible once the form is hidden on success
 - the guest-only fields reveal and hide with the attending choice
+- photos open full size, zoom past the screen, and close every way out
 - badge cutouts have no interior holes
 
 ## Deploying
