@@ -1,0 +1,12 @@
+{
+  "name": "aleandharry",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node test/server.mjs",
+    "test": "node test/check-site.mjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.49.0"
+  }
+}

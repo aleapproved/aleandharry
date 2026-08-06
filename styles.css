@@ -1,17 +1,23 @@
+/* Light palette (Solrock). */
 :root {
   color-scheme: light;
   --ink: #2b2320;
   --ink-soft: #6b5c50;
   --paper: #f7ecdd;
   --accent: #d9662e;
+  --shadow: 47 42 38;
+  --mark-size: 5.5rem;
 }
 
+/* Dark palette (Lunatone). The two blocks below must stay in sync: the first
+   serves the manual toggle, the second serves an untouched dark-OS visitor. */
 :root[data-theme="dark"] {
   color-scheme: dark;
   --ink: #ece7f5;
   --ink-soft: #b3a9cf;
   --paper: #1b1830;
   --accent: #9b7fd4;
+  --shadow: 8 5 20;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -20,7 +26,23 @@
     --ink: #ece7f5;
     --ink-soft: #b3a9cf;
     --paper: #1b1830;
-    --accent: #d98ea0;
+    --accent: #9b7fd4;
+    --shadow: 8 5 20;
+  }
+}
+
+/* The RSVP page runs a Bellibolt accent over the same neutrals. */
+body[data-accent="bellibolt"] {
+  --accent: #1c9c82;
+}
+
+:root[data-theme="dark"] body[data-accent="bellibolt"] {
+  --accent: #4fd8b8;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) body[data-accent="bellibolt"] {
+    --accent: #4fd8b8;
   }
 }
 
@@ -47,13 +69,27 @@ a {
   color: var(--accent);
 }
 
+::selection {
+  background: color-mix(in srgb, var(--accent) 28%, transparent);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
 .site-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1.5rem;
   padding: 1.5rem 2rem;
+  background: var(--paper);
   border-bottom: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+  transition: background-color 0.2s ease;
 }
 
 .site-header .nav-group {
@@ -67,6 +103,7 @@ a {
   color: var(--ink);
   font-size: 1.1rem;
   letter-spacing: 0.05em;
+  white-space: nowrap;
 }
 
 .site-header .brand .amp {
@@ -79,17 +116,26 @@ a {
   gap: 1.5rem;
 }
 
+/* Every link carries the underline slot, so the header keeps the same height
+   and the nav sits on the same baseline whether or not a page is current. */
 .site-header nav a {
   text-decoration: none;
   font-size: 0.85rem;
   letter-spacing: 0.15em;
   text-transform: uppercase;
+  white-space: nowrap;
+  padding-bottom: 0.2rem;
+  border-bottom: 1px solid transparent;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.site-header nav a:hover {
+  color: var(--ink);
 }
 
 .site-header nav a[aria-current="page"] {
   color: var(--ink);
-  border-bottom: 1px solid var(--accent);
-  padding-bottom: 0.2rem;
+  border-bottom-color: var(--accent);
 }
 
 main {
@@ -101,8 +147,15 @@ main {
   padding: 4rem 2rem;
 }
 
+main.centered {
+  justify-content: center;
+}
+
+/* Letter-spacing adds a trailing gap after the last character, which nudges
+   centred text left of true centre. The indent puts it back. */
 .eyebrow {
   letter-spacing: 0.3em;
+  text-indent: 0.3em;
   text-transform: uppercase;
   font-size: 0.75rem;
   color: var(--accent);
@@ -124,6 +177,10 @@ h1 .amp {
   margin: 0.25em 0;
 }
 
+h1.page-title {
+  font-size: clamp(2rem, 5vw, 3rem);
+}
+
 p {
   font-size: 1.05rem;
   line-height: 1.6;
@@ -132,7 +189,13 @@ p {
   max-width: 32rem;
 }
 
+p.quote {
+  font-size: 1.3rem;
+  font-style: italic;
+}
+
 .theme-toggle {
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -143,6 +206,7 @@ p {
   border-radius: 50%;
   background: none;
   cursor: pointer;
+  transition: background-color 0.15s ease;
 }
 
 .theme-toggle:hover {
@@ -174,6 +238,27 @@ p {
   margin: 1.75rem auto;
 }
 
+/* Marks are locked by height, not width, so every page's badge row is the
+   same height and the rule below it lands in the same place on each page. */
+.page-mark {
+  display: block;
+  height: var(--mark-size);
+  width: auto;
+  margin: 0 auto 1.5rem;
+}
+
+.page-marks {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin: 0 auto 1.5rem;
+}
+
+.page-marks .page-mark {
+  margin: 0;
+}
+
 .moment {
   max-width: 34rem;
   margin-top: 3rem;
@@ -183,12 +268,16 @@ p {
   margin-top: 3.5rem;
 }
 
+.moment .eyebrow {
+  margin-bottom: 0.75rem;
+}
+
 .moment img {
   width: 100%;
   height: auto;
   display: block;
   border-radius: 4px;
-  box-shadow: 0 1.5rem 3rem -1.5rem rgba(47, 42, 38, 0.4);
+  box-shadow: 0 1.5rem 3rem -1.5rem rgb(var(--shadow) / 0.45);
 }
 
 .moment figcaption {
@@ -228,6 +317,8 @@ p {
   background: none;
   border: none;
   border-bottom: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  border-radius: 0;
+  transition: border-color 0.15s ease;
 }
 
 .field input[type="text"]:focus,
@@ -237,14 +328,23 @@ p {
 }
 
 .toggle-group {
+  position: relative;
   display: flex;
   gap: 0.75rem;
 }
 
+/* Visually hidden but still focusable, and kept inside the group so focusing
+   a radio by keyboard cannot scroll the page off to a stray position. */
 .toggle-group input {
   position: absolute;
-  opacity: 0;
-  pointer-events: none;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .toggle-group label {
@@ -256,15 +356,25 @@ p {
   cursor: pointer;
   font-size: 0.85rem;
   letter-spacing: 0.1em;
+  text-indent: 0.1em;
   text-transform: uppercase;
   margin: 0;
-  transition: background-color 0.15s ease, color 0.15s ease;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.toggle-group label:hover {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
 }
 
 .toggle-group input:checked + label {
   background: var(--accent);
   border-color: var(--accent);
   color: var(--paper);
+}
+
+.toggle-group input:focus-visible + label {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
 }
 
 .field-honeypot {
@@ -281,12 +391,18 @@ p {
   font: inherit;
   font-size: 0.9rem;
   letter-spacing: 0.15em;
+  text-indent: 0.15em;
   text-transform: uppercase;
   color: var(--paper);
   background: var(--accent);
   border: none;
   border-radius: 999px;
   cursor: pointer;
+  transition: background-color 0.15s ease, opacity 0.15s ease;
+}
+
+.rsvp-submit:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent) 85%, var(--ink));
 }
 
 .rsvp-submit:disabled {
@@ -304,8 +420,72 @@ p {
   color: var(--accent);
 }
 
+/* Once the form is gone the thank-you takes over its place in the rhythm. */
+.rsvp-form.is-hidden + .rsvp-status {
+  margin-top: 3rem;
+}
+
 .rsvp-form.is-hidden,
 .rsvp-status.is-hidden,
 .field-party.is-hidden {
   display: none;
+}
+
+@media (max-width: 40rem) {
+  :root {
+    --mark-size: 4.5rem;
+  }
+
+  .site-header {
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+  }
+
+  .site-header .brand {
+    font-size: 1rem;
+  }
+
+  .site-header .nav-group,
+  .site-header nav {
+    gap: 1rem;
+  }
+
+  .site-header nav a {
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+  }
+
+  main {
+    padding: 2.5rem 1.25rem 3.5rem;
+  }
+
+  .rsvp-form,
+  .moment:first-of-type {
+    margin-top: 2.5rem;
+  }
+}
+
+/* Narrower than this the header cannot hold one row without squashing, so it
+   wraps deliberately rather than overflowing. */
+@media (max-width: 22rem) {
+  .site-header {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.85rem;
+  }
+
+  .site-header .brand {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }

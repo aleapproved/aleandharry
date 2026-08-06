@@ -26,6 +26,13 @@ document.addEventListener('DOMContentLoaded', function () {
   form.addEventListener('submit', function (event) {
     event.preventDefault();
 
+    var nameInput = document.getElementById('name');
+    if (!nameInput.value.trim()) {
+      showStatus('Please enter a name.', 'error');
+      nameInput.focus();
+      return;
+    }
+
     var attendingInput = form.querySelector('input[name="attending"]:checked');
     if (!attendingInput) {
       showStatus("Please let us know if you're attending.", 'error');
@@ -33,7 +40,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     var payload = {
-      name: document.getElementById('name').value.trim(),
+      name: nameInput.value.trim(),
       attending: attendingInput.value,
       partySize: attendingInput.value === 'Yes' ? Number(partyInput.value) : 0,
       company: document.getElementById('company').value,
