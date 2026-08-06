@@ -25,19 +25,37 @@ async function readFileOrNull(path) {
   }
 }
 
-// Serves the site the way GitHub Pages does: directories resolve to
-// index.html and anything missing gets 404.html, so what you see locally
-// matches what goes live.
+// Serves the site the way Cloudflare Pages does, so what you see locally
+// matches what goes live: directories resolve to index.html, a bare path
+// resolves to the .html file of that name, an explicit .html redirects to the
+// bare path, and anything missing gets 404.html.
 export function startServer(port = 0) {
   const server = createServer(async (req, res) => {
-    const { pathname } = new URL(req.url, 'http://localhost');
+    const { pathname, search } = new URL(req.url, 'http://localhost');
     let rel = normalize(decodeURIComponent(pathname));
     if (rel.endsWith('/')) rel += 'index.html';
     rel = rel.replace(/^([/\\]|\.\.[/\\])+/, '');
 
+    // Pages publishes one canonical URL per page and redirects the other to
+    // it. Mirroring that here is what stops a link written as /travel.html
+    // looking fine locally and costing a round trip in production.
+    if (rel.endsWith('.html') && rel !== 'index.html' && rel !== '404.html') {
+      if (await readFileOrNull(join(ROOT, rel))) {
+        res.writeHead(308, { Location: '/' + rel.slice(0, -'.html'.length) + search });
+        res.end();
+        return;
+      }
+    }
+
     let path = join(ROOT, rel);
     let body = await readFileOrNull(path);
     let status = 200;
+
+    // A bare /travel is the canonical form, served from travel.html.
+    if (!body && !extname(rel)) {
+      path = join(ROOT, rel + '.html');
+      body = await readFileOrNull(path);
+    }
 
     if (!body) {
       path = join(ROOT, '404.html');

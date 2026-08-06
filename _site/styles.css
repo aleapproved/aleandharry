@@ -1,0 +1,747 @@
+/* Inter, matching alessandrogillies.com. Subset to Latin and Latin Extended,
+   which takes it from 352KB to 141KB; both variable axes are intact. */
+@font-face {
+  font-family: Inter;
+  src: url('/fonts/InterVariable.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: light;
+  --mark-size: 5.5rem;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+  }
+}
+
+/* Every page is coloured by its Pokémon, in both schemes. Each palette below
+   names its two versions once, as -l and -d pairs; the three blocks after them
+   are the only place that picks between the two, so adding a page means adding
+   one block and nothing else. Defaults are Solrock by day, Lunatone by night. */
+body {
+  --ink-l: #2b2320;
+  --ink-soft-l: #6b5c50;
+  --paper-l: #f7ecdd;
+  --accent-l: #d9662e;
+  --shadow-l: 47 42 38;
+
+  --ink-d: #ece7f5;
+  --ink-soft-d: #b3a9cf;
+  --paper-d: #1b1830;
+  --accent-d: #9b7fd4;
+  --shadow-d: 8 5 20;
+}
+
+/* Hale is the two of us: Mudkip blue on Ditto lilac. */
+body[data-accent="hale"] {
+  --ink-l: #241f30;
+  --ink-soft-l: #5c5470;
+  --paper-l: #f3eef9;
+  --accent-l: #2f6ea8;
+  --shadow-l: 36 31 48;
+
+  --ink-d: #eae6f6;
+  --ink-soft-d: #b0a8ca;
+  --paper-d: #1a1630;
+  --accent-d: #82c4f2;
+  --shadow-d: 8 5 20;
+}
+
+body[data-accent="chansey"] {
+  --ink-l: #2e1f26;
+  --ink-soft-l: #6e5a60;
+  --paper-l: #fbeff1;
+  --accent-l: #b04566;
+  --shadow-l: 46 31 38;
+
+  --ink-d: #f6e8ec;
+  --ink-soft-d: #cfb2bc;
+  --paper-d: #2a1a22;
+  --accent-d: #f2a0b8;
+  --shadow-d: 20 8 12;
+}
+
+body[data-accent="lapras"] {
+  --ink-l: #1f2530;
+  --ink-soft-l: #545e6e;
+  --paper-l: #edf1f8;
+  --accent-l: #45689f;
+  --shadow-l: 31 37 48;
+
+  --ink-d: #e6ebf6;
+  --ink-soft-d: #a9b4cc;
+  --paper-d: #141a2c;
+  --accent-d: #93b6ea;
+  --shadow-d: 6 8 18;
+}
+
+body[data-accent="bellibolt"] {
+  --ink-l: #1c2a26;
+  --ink-soft-l: #506059;
+  --paper-l: #e9f4ef;
+  --accent-l: #17836e;
+  --shadow-l: 28 42 38;
+
+  --ink-d: #e4f2ec;
+  --ink-soft-d: #a3c2b8;
+  --paper-d: #0f2420;
+  --accent-d: #4fd8b8;
+  --shadow-d: 4 16 12;
+}
+
+body {
+  --ink: var(--ink-l);
+  --ink-soft: var(--ink-soft-l);
+  --paper: var(--paper-l);
+  --accent: var(--accent-l);
+  --shadow: var(--shadow-l);
+}
+
+/* These two must stay in sync: the first serves the manual toggle, the second
+   an untouched dark-OS visitor. */
+:root[data-theme="dark"] body {
+  --ink: var(--ink-d);
+  --ink-soft: var(--ink-soft-d);
+  --paper: var(--paper-d);
+  --accent: var(--accent-d);
+  --shadow: var(--shadow-d);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) body {
+    --ink: var(--ink-d);
+    --ink-soft: var(--ink-soft-d);
+    --paper: var(--paper-d);
+    --accent: var(--accent-d);
+    --shadow: var(--shadow-d);
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  min-height: 100%;
+}
+
+/* Our Story is tall enough to scroll and RSVP usually isn't, so on any
+   browser with classic scrollbars the scrolling page lost ~15px of width
+   and its centred content sat half that to the left of the other pages'.
+   Reserving the gutter everywhere keeps the two pages aligned. */
+html {
+  scrollbar-gutter: stable;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+a {
+  color: var(--accent);
+}
+
+/* Tapping a control on a touch screen paints a translucent grey-blue
+   rectangle over it, which sits square over the round theme toggle. Touch
+   gets its own :active feedback below instead. */
+a,
+button,
+label,
+input {
+  -webkit-tap-highlight-color: transparent;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--accent) 28%, transparent);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.5rem 2rem;
+  background: var(--paper);
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+  transition: background-color 0.2s ease;
+}
+
+.site-header .nav-group {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.site-header .brand {
+  text-decoration: none;
+  color: var(--ink);
+  font-size: 1.1rem;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.site-header .brand .amp {
+  color: var(--accent);
+}
+
+.site-header nav {
+  display: flex;
+  gap: 1.5rem;
+}
+
+/* Every link carries the underline slot, so the header keeps the same height
+   and the nav sits on the same baseline whether or not a page is current. */
+.site-header nav a {
+  text-decoration: none;
+  font-size: 0.85rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  padding-bottom: 0.2rem;
+  border-bottom: 1px solid transparent;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+@media (hover: hover) {
+  .site-header nav a:hover {
+    color: var(--ink);
+  }
+}
+
+.site-header nav a[aria-current="page"] {
+  color: var(--ink);
+  border-bottom-color: var(--accent);
+}
+
+main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 4rem 2rem;
+}
+
+main.centered {
+  justify-content: center;
+}
+
+/* Letter-spacing adds a trailing gap after the last character, which nudges
+   centred text left of true centre. The indent puts it back. */
+.eyebrow {
+  letter-spacing: 0.3em;
+  text-indent: 0.3em;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  color: var(--accent);
+  margin-bottom: 1.5rem;
+}
+
+h1 {
+  font-size: clamp(2rem, 9vw, 4rem);
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  margin: 0 0 1rem;
+  line-height: 1.15;
+}
+
+h1 .amp {
+  color: var(--accent);
+  font-size: 0.6em;
+  font-weight: 300;
+  margin: 0 0.2em;
+}
+
+h1.page-title {
+  font-size: clamp(2rem, 5vw, 3rem);
+}
+
+p {
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: var(--ink-soft);
+  margin: 0;
+  max-width: 32rem;
+}
+
+p.quote {
+  font-size: 1.3rem;
+  font-weight: 300;
+}
+
+.theme-toggle {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0.4rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+@media (hover: hover) {
+  .theme-toggle:hover {
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+  }
+}
+
+.theme-toggle:active {
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+.theme-toggle img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.theme-toggle .theme-icon-dark {
+  display: none;
+}
+
+:root[data-theme="dark"] .theme-toggle .theme-icon-light {
+  display: none;
+}
+
+:root[data-theme="dark"] .theme-toggle .theme-icon-dark {
+  display: block;
+}
+
+.rule {
+  width: 3rem;
+  height: 1px;
+  background: var(--accent);
+  margin: 1.75rem auto;
+}
+
+/* Marks are locked by height, not width, so every page's badge row is the
+   same height and the rule below it lands in the same place on each page. */
+.page-mark {
+  display: block;
+  height: var(--mark-size);
+  width: auto;
+  margin: 0 auto 1.5rem;
+}
+
+.page-marks {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin: 0 auto 1.5rem;
+}
+
+.page-marks .page-mark {
+  margin: 0;
+}
+
+.moment {
+  max-width: 34rem;
+  margin-top: 3rem;
+}
+
+/* Interior pages open straight from the title with no rule under it, so the
+   first block carries the gap the rule used to hold open. */
+.moment:first-of-type {
+  margin-top: 4.5rem;
+}
+
+.moment .eyebrow {
+  margin-bottom: 0.75rem;
+}
+
+.moment img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 4px;
+  box-shadow: 0 1.5rem 3rem -1.5rem rgb(var(--shadow) / 0.45);
+}
+
+.moment figcaption {
+  margin-top: 1.25rem;
+  font-size: 0.95rem;
+  color: var(--accent);
+}
+
+.rsvp-form {
+  width: 100%;
+  max-width: 26rem;
+  margin-top: 4rem;
+  text-align: left;
+}
+
+.field {
+  margin-bottom: 1.5rem;
+}
+
+.field label {
+  display: block;
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-bottom: 0.6rem;
+}
+
+.field input[type="text"],
+.field input[type="number"] {
+  width: 100%;
+  padding: 0.6rem 0.1rem;
+  font: inherit;
+  font-size: 1.05rem;
+  color: var(--ink);
+  background: none;
+  border: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  border-radius: 0;
+  transition: border-color 0.15s ease;
+}
+
+.field input[type="text"]:focus,
+.field input[type="number"]:focus {
+  outline: none;
+  border-bottom-color: var(--accent);
+}
+
+.toggle-group {
+  position: relative;
+  display: flex;
+  gap: 0.75rem;
+}
+
+/* Visually hidden but still focusable, and kept inside the group so focusing
+   a radio by keyboard cannot scroll the page off to a stray position. */
+.toggle-group input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.toggle-group label {
+  flex: 1;
+  text-align: center;
+  padding: 0.6rem 1rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  letter-spacing: 0.1em;
+  text-indent: 0.1em;
+  text-transform: uppercase;
+  margin: 0;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+@media (hover: hover) {
+  .toggle-group label:hover {
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+  }
+}
+
+.toggle-group label:active {
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+.toggle-group input:checked + label {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--paper);
+}
+
+.toggle-group input:focus-visible + label {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.field-honeypot {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.rsvp-submit {
+  width: 100%;
+  padding: 0.8rem 1.5rem;
+  font: inherit;
+  font-size: 0.9rem;
+  letter-spacing: 0.15em;
+  text-indent: 0.15em;
+  text-transform: uppercase;
+  color: var(--paper);
+  background: var(--accent);
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, opacity 0.15s ease;
+}
+
+@media (hover: hover) {
+  .rsvp-submit:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--accent) 85%, var(--ink));
+  }
+}
+
+.rsvp-submit:active:not(:disabled) {
+  background: color-mix(in srgb, var(--accent) 78%, var(--ink));
+}
+
+.rsvp-submit:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.rsvp-status {
+  margin-top: 1.25rem;
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+.rsvp-status[data-state="error"] {
+  color: var(--accent);
+}
+
+/* Once the form is gone the thank-you takes over its place in the rhythm. */
+.rsvp-form.is-hidden + .rsvp-status {
+  margin-top: 4rem;
+}
+
+.rsvp-form.is-hidden,
+.rsvp-status.is-hidden,
+.field-party.is-hidden {
+  display: none;
+}
+
+/* Homepage date and countdown. */
+.date-line {
+  font-size: 1.15rem;
+  color: var(--ink);
+  letter-spacing: 0.02em;
+}
+
+.countdown {
+  margin-top: 0.5rem;
+  font-size: 0.95rem;
+  color: var(--accent);
+  /* The seconds change width every tick; tabular figures stop the centred
+     line shuffling sideways once a second. */
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+/* Nothing is booked yet, so anything provisional says so in the same voice
+   everywhere rather than each page inventing its own hedge. */
+.tbc {
+  color: var(--ink-soft);
+  opacity: 0.85;
+}
+
+/* One way to reach us, on every page, below whatever the page is about. */
+.site-footer {
+  padding: 2.5rem 2rem 3rem;
+  text-align: center;
+  border-top: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+.site-footer p {
+  margin: 0 auto;
+  font-size: 0.85rem;
+  letter-spacing: 0.02em;
+}
+
+.site-footer a {
+  color: var(--accent);
+  text-decoration-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  text-underline-offset: 0.25em;
+}
+
+/* Stacked information sections on The Day and Travel. */
+.info {
+  width: 100%;
+  max-width: 34rem;
+  margin-top: 2.75rem;
+  text-align: left;
+}
+
+.info:first-of-type {
+  margin-top: 4rem;
+}
+
+.info h2 {
+  font-size: 0.75rem;
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 0.75rem;
+}
+
+.info p + p {
+  margin-top: 0.75rem;
+}
+
+.info p {
+  max-width: none;
+}
+
+.field textarea {
+  width: 100%;
+  min-height: 4.5rem;
+  padding: 0.6rem 0.1rem;
+  font: inherit;
+  font-size: 1.05rem;
+  line-height: 1.5;
+  color: var(--ink);
+  background: none;
+  border: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  border-radius: 0;
+  resize: vertical;
+  transition: border-color 0.15s ease;
+}
+
+.field textarea:focus {
+  outline: none;
+  border-bottom-color: var(--accent);
+}
+
+.field input[type="email"] {
+  width: 100%;
+  padding: 0.6rem 0.1rem;
+  font: inherit;
+  font-size: 1.05rem;
+  color: var(--ink);
+  background: none;
+  border: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  border-radius: 0;
+  transition: border-color 0.15s ease;
+}
+
+.field input[type="email"]:focus {
+  outline: none;
+  border-bottom-color: var(--accent);
+}
+
+.field-hint {
+  margin-top: 0.4rem;
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+}
+
+@media (max-width: 40rem) {
+  :root {
+    --mark-size: 4.5rem;
+  }
+
+  .site-header {
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+  }
+
+  .site-header .brand {
+    font-size: 1rem;
+  }
+
+  .site-header .nav-group,
+  .site-header nav {
+    gap: 1rem;
+  }
+
+  .site-header nav a {
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+  }
+
+  main {
+    padding: 2.5rem 1.25rem 3.5rem;
+  }
+
+  .site-footer {
+    padding: 2rem 1.25rem 2.5rem;
+  }
+
+  .rsvp-form,
+  .info:first-of-type,
+  .moment:first-of-type {
+    margin-top: 3rem;
+  }
+}
+
+/* Five nav links no longer fit beside the brand on a phone. Rather than
+   squash anything, the header becomes two rows: brand and toggle at the
+   edges, nav centred underneath. Dissolving .nav-group with display:contents
+   lets its two children take part in the header's own wrap. */
+@media (max-width: 32rem) {
+  .site-header {
+    flex-wrap: wrap;
+    gap: 0.85rem;
+  }
+
+  .site-header .nav-group {
+    display: contents;
+  }
+
+  .site-header .brand {
+    order: 1;
+  }
+
+  .site-header .theme-toggle {
+    order: 2;
+  }
+
+  .site-header nav {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+    row-gap: 0.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

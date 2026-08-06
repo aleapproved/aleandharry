@@ -1,0 +1,12 @@
+{
+  "name": "Ale & Harry",
+  "short_name": "Ale & Harry",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f7ecdd",
+  "theme_color": "#f7ecdd",
+  "icons": [
+    { "src": "/images/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/images/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

@@ -41,9 +41,13 @@ try {
   const manifest = JSON.parse(await readFile(new URL('../site.webmanifest', import.meta.url), 'utf8'));
   for (const icon of manifest.icons) referenced.add(icon.src);
 
+  // redirect: manual, because following redirects would let a link written as
+  // /travel.html look healthy here while costing every visitor a round trip:
+  // the host publishes /travel and 308s the .html form to it.
   for (const asset of [...referenced].sort()) {
-    const res = await fetch(base + asset);
-    check('asset', res.status === 200, `${asset} returned ${res.status}`);
+    const res = await fetch(base + asset, { redirect: 'manual' });
+    check('asset resolves without redirecting', res.status === 200,
+      `${asset} returned ${res.status}${res.headers.get('location') ? ` to ${res.headers.get('location')}` : ''}`);
   }
   console.log(`  ${referenced.size} references checked`);
 

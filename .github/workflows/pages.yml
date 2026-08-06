@@ -26,21 +26,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # git archive, not a copy of the working tree: it emits committed files
+      # and nothing else, so anything gitignored cannot reach the site even by
+      # accident. An earlier exclude-list version of this swept .env into the
+      # upload, which would have published every token in it.
       - name: Stage the site
         run: |
           mkdir _site
-          rsync -a \
-            --exclude='.git' \
-            --exclude='.github' \
-            --exclude='_site' \
-            --exclude='node_modules' \
-            --exclude='test' \
-            --exclude='tools' \
-            --exclude='worker' \
-            --exclude='*.md' \
-            --exclude='package.json' \
-            --exclude='package-lock.json' \
-            . _site/
+          git archive HEAD | tar -x -C _site
+          rm -rf _site/.github _site/test _site/tools _site/worker
+          rm -f _site/*.md _site/package.json _site/package-lock.json _site/.gitignore
 
       - uses: cloudflare/wrangler-action@v3
         with:
