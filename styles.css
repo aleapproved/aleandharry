@@ -77,6 +77,16 @@ a {
   color: var(--accent);
 }
 
+/* Tapping a control on a touch screen paints a translucent grey-blue
+   rectangle over it, which sits square over the round theme toggle. Touch
+   gets its own :active feedback below instead. */
+a,
+button,
+label,
+input {
+  -webkit-tap-highlight-color: transparent;
+}
+
 ::selection {
   background: color-mix(in srgb, var(--accent) 28%, transparent);
 }
@@ -137,8 +147,10 @@ a {
   transition: color 0.15s ease, border-color 0.15s ease;
 }
 
-.site-header nav a:hover {
-  color: var(--ink);
+@media (hover: hover) {
+  .site-header nav a:hover {
+    color: var(--ink);
+  }
 }
 
 .site-header nav a[aria-current="page"] {
@@ -217,8 +229,14 @@ p.quote {
   transition: background-color 0.15s ease;
 }
 
-.theme-toggle:hover {
-  background: color-mix(in srgb, var(--accent) 12%, transparent);
+@media (hover: hover) {
+  .theme-toggle:hover {
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+  }
+}
+
+.theme-toggle:active {
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
 }
 
 .theme-toggle img {
@@ -370,8 +388,14 @@ p.quote {
   transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
 
-.toggle-group label:hover {
-  background: color-mix(in srgb, var(--accent) 12%, transparent);
+@media (hover: hover) {
+  .toggle-group label:hover {
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+  }
+}
+
+.toggle-group label:active {
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
 }
 
 .toggle-group input:checked + label {
@@ -409,8 +433,14 @@ p.quote {
   transition: background-color 0.15s ease, opacity 0.15s ease;
 }
 
-.rsvp-submit:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--accent) 85%, var(--ink));
+@media (hover: hover) {
+  .rsvp-submit:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--accent) 85%, var(--ink));
+  }
+}
+
+.rsvp-submit:active:not(:disabled) {
+  background: color-mix(in srgb, var(--accent) 78%, var(--ink));
 }
 
 .rsvp-submit:disabled {

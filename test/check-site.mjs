@@ -139,6 +139,52 @@ try {
   }
 
   // ---------------------------------------------------------------
+  // Cutting a character out of its white artwork by matching colour
+  // punches holes wherever the drawing contains a light or a
+  // compression-speckled pixel. They are invisible on the cream page and
+  // show as a dark rash in dark mode — Bellibolt's pupils looked like
+  // they had a border. Anti-aliasing along the silhouette is legitimate,
+  // so only count half-transparent pixels well inside the shape.
+  // ---------------------------------------------------------------
+  section('Cutout quality');
+  {
+    const page = await browser.newPage();
+    await page.goto(`${base}/index.html`);
+    for (const file of ['mudkip-badge.png', 'ditto-badge.png', 'bellibolt-badge.png',
+                        'solrock-icon.png', 'lunatone-icon.png']) {
+      const holes = await page.evaluate(async (src) => {
+        const img = new Image();
+        img.src = src;
+        await img.decode();
+        const c = new OffscreenCanvas(img.width, img.height);
+        const ctx = c.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        const { data, width, height } = ctx.getImageData(0, 0, img.width, img.height);
+        const alpha = (x, y) => data[(y * width + x) * 4 + 3];
+
+        let count = 0;
+        const R = 3;
+        for (let y = R; y < height - R; y++) {
+          for (let x = R; x < width - R; x++) {
+            const a = alpha(x, y);
+            if (a === 0 || a >= 250) continue;
+            let nearEdge = false;
+            for (let dy = -R; dy <= R && !nearEdge; dy++) {
+              for (let dx = -R; dx <= R; dx++) {
+                if (alpha(x + dx, y + dy) === 0) { nearEdge = true; break; }
+              }
+            }
+            if (!nearEdge) count++;
+          }
+        }
+        return count;
+      }, `/images/${file}`);
+      check('cutout has no interior holes', holes < 150, `${file}: ${holes} half-transparent pixels inside the shape`);
+    }
+    await page.close();
+  }
+
+  // ---------------------------------------------------------------
   // Dark mode must look the same however you arrive at it: the OS
   // setting and the toggle used to resolve to different accents.
   // ---------------------------------------------------------------
