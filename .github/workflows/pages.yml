@@ -1,0 +1,36 @@
+name: pages
+
+# Publishes the repo as-is. The site is hand-written static HTML, so there is
+# nothing to build — this uploads the files and hands them to Pages directly,
+# instead of the legacy pipeline running Jekyll over them for no reason.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Queue pushes rather than cancelling the one in flight: a cancelled deploy
+# leaves the previous one published and is easy to mistake for a hang.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+      - id: deployment
+        uses: actions/deploy-pages@v4
