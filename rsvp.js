@@ -1,4 +1,7 @@
-var RSVP_ENDPOINT = 'https://aleandharry-rsvp.alessandrogillies.workers.dev';
+// Same-origin: a worker route claims this path ahead of the site, so the form
+// posts without a preflight. Point it at http://localhost:8787 to test against
+// `wrangler dev`, and put it back before committing.
+var RSVP_ENDPOINT = '/api/rsvp';
 
 document.addEventListener('DOMContentLoaded', function () {
   var form = document.getElementById('rsvpForm');

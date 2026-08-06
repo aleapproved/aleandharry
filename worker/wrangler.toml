@@ -4,9 +4,11 @@ compatibility_date = "2026-08-04"
 
 # Mounted on the site's own domain rather than left on workers.dev, so the RSVP
 # form posts same-origin. Worker routes are matched ahead of Pages, so this one
-# path is the worker and everything else is the site. The workers.dev URL stays
-# live alongside it, which is what `wrangler dev` and the CORS handling below
-# still serve.
+# path is the worker and everything else is the site.
+#
+# Declaring a route also switches the workers.dev URL off, which is deliberate:
+# one public endpoint writing to Airtable is enough. Setting workers_dev = true
+# would bring it back.
 routes = [
   { pattern = "aleandharry.com/api/rsvp", zone_name = "aleandharry.com" }
 ]

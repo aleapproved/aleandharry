@@ -149,10 +149,13 @@ whole record if a field doesn't exist, so add the column before sending a new
 one.
 
 It is routed at `aleandharry.com/api/rsvp`, so the form posts to its own origin
-and no CORS preflight happens in the browser at all. The worker still sends the
-CORS headers, because the `workers.dev` URL stays reachable and `wrangler dev`
-depends on them. Worker routes are matched ahead of Pages, so that one path is
-the worker and every other path is the site.
+and no CORS preflight happens in the browser at all. Worker routes are matched
+ahead of Pages, so that one path is the worker and every other path is the site.
+
+Declaring that route also switches the `workers.dev` URL off, which is what we
+want: one public endpoint writing to Airtable rather than two. The CORS handling
+in the worker stays, because the local flow below runs the site on port 8000 and
+the worker on 8787, which is cross-origin.
 
 To run it against the real base:
 
