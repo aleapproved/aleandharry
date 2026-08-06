@@ -1,7 +1,9 @@
 # aleandharry.com
 
-A static site served by GitHub Pages from `main`. No build step: the files in
-the repo root are what gets served.
+A static site on Cloudflare Pages, published from `main`. No build step: the
+files in the repo root are the site. The deploy stages them into `_site` first
+so that the checks, the badge tooling and the worker's source stay in the repo
+rather than turning up under aleandharry.com.
 
 ## Running it locally
 
@@ -12,7 +14,7 @@ npm start            # http://localhost:8000
 
 Every asset is referenced from the site root (`/styles.css`, `/images/…`), so
 opening the HTML files directly with `file://` renders them unstyled. Use the
-server. It mirrors GitHub Pages, including serving `404.html` for unknown paths.
+server. It mirrors the host, including serving `404.html` for unknown paths.
 
 Two things to know while poking around:
 
@@ -125,13 +127,34 @@ things that are easy to break by accident:
 - the guest-only fields reveal and hide with the attending choice
 - badge cutouts have no interior holes
 
+## Deploying
+
+Pushing to `main` runs `.github/workflows/pages.yml`, which stages the site and
+uploads it with `wrangler pages deploy`. It needs one repo secret,
+`CLOUDFLARE_API_TOKEN`, with Cloudflare Pages edit rights; the account ID is in
+the workflow, since on its own it authorises nothing.
+
+DNS for aleandharry.com is on Cloudflare. The apex and `www` resolve to the
+Pages project; the Fastmail `MX` records are untouched by any of this and must
+stay that way. If a deploy ever needs backing out in a hurry, the site is
+static and every previous deployment stays addressable in the Pages dashboard,
+so rolling back is a promotion rather than a revert.
+
 ## The RSVP worker
 
 `worker/` holds a Cloudflare Worker that validates a submission and appends it
 to Airtable. It writes `Name`, `Email`, `Attending`, `Party Size`,
 `Guest Names`, `Dietary Requirements` and `Message`. Airtable rejects the
 whole record if a field doesn't exist, so add the column before sending a new
-one. To run it against the real base:
+one.
+
+It is routed at `aleandharry.com/api/rsvp`, so the form posts to its own origin
+and no CORS preflight happens in the browser at all. The worker still sends the
+CORS headers, because the `workers.dev` URL stays reachable and `wrangler dev`
+depends on them. Worker routes are matched ahead of Pages, so that one path is
+the worker and every other path is the site.
+
+To run it against the real base:
 
 ```bash
 cd worker

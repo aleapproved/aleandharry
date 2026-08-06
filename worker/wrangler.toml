@@ -1,3 +1,12 @@
 name = "aleandharry-rsvp"
 main = "src/index.js"
 compatibility_date = "2026-08-04"
+
+# Mounted on the site's own domain rather than left on workers.dev, so the RSVP
+# form posts same-origin. Worker routes are matched ahead of Pages, so this one
+# path is the worker and everything else is the site. The workers.dev URL stays
+# live alongside it, which is what `wrangler dev` and the CORS handling below
+# still serve.
+routes = [
+  { pattern = "aleandharry.com/api/rsvp", zone_name = "aleandharry.com" }
+]
