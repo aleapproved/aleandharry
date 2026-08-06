@@ -24,6 +24,30 @@ Two things to know while poking around:
   `https://aleandharry.com`, so a POST from localhost fails CORS preflight. See
   below for exercising it for real.
 
+## Pages
+
+`index` (names, provisional date, countdown), `our-story`, `the-day`,
+`travel`, `rsvp`, `404`. The Day and Travel are deliberately full of
+placeholders — nothing is booked yet — styled with `.tbc` so every
+unconfirmed fact hedges in the same voice.
+
+The date is **provisional**: Friday 16 June 2028, nine years to the day from
+the first date. It appears on the homepage and The Day, both captioned as
+not yet booked.
+
+## Artwork
+
+`tools/make-badge.py` cuts a character out of its original white-background
+artwork. Do not cut them by matching colour — that punches holes through the
+drawing that only show up in dark mode. Regenerate with:
+
+```bash
+python3 tools/make-badge.py "images/mudkip (1).jpg" images/mudkip-badge.png --height 264
+python3 tools/make-badge.py images/solrock.jpg images/solrock-icon.png --canvas 108 108 --content-scale 0.885
+```
+
+The source JPEGs in `images/` are inputs to this tool — don't delete them.
+
 ## Checks
 
 ```bash
@@ -36,16 +60,21 @@ things that are easy to break by accident:
 - referenced assets all resolve, and no page throws
 - the header is the same height on every page, and the nav sits on the same
   line whether or not the page has the current-page underline
-- the rule under the title lands on the same pixel on Our Story and RSVP
+- the rule under the title lands on the same pixel across pages of the same shape
 - the theme toggle stays circular, and no page scrolls sideways
 - the header stays pinned when the page scrolls
 - dark mode resolves to the same accent via the OS setting and via the toggle
 - the RSVP confirmation is visible once the form is hidden on success
+- the guest-only fields reveal and hide with the attending choice
+- badge cutouts have no interior holes
 
 ## The RSVP worker
 
 `worker/` holds a Cloudflare Worker that validates a submission and appends it
-to Airtable. To run it against the real base:
+to Airtable. It writes `Name`, `Email`, `Attending`, `Party Size`,
+`Guest Names`, `Dietary Requirements` and `Message` — Airtable rejects the
+whole record if a field doesn't exist, so add the column before sending a new
+one. To run it against the real base:
 
 ```bash
 cd worker

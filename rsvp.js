@@ -4,15 +4,21 @@ document.addEventListener('DOMContentLoaded', function () {
   var form = document.getElementById('rsvpForm');
   if (!form) return;
 
-  var partyField = form.querySelector('.field-party');
+  var partyFields = form.querySelectorAll('.field-party');
   var partyInput = document.getElementById('partySize');
   var status = document.getElementById('rsvpStatus');
   var submitButton = form.querySelector('.rsvp-submit');
 
+  function field(id) {
+    return document.getElementById(id);
+  }
+
   form.querySelectorAll('input[name="attending"]').forEach(function (radio) {
     radio.addEventListener('change', function () {
       var attendingYes = form.querySelector('input[name="attending"]:checked').value === 'Yes';
-      partyField.classList.toggle('is-hidden', !attendingYes);
+      partyFields.forEach(function (el) {
+        el.classList.toggle('is-hidden', !attendingYes);
+      });
       partyInput.required = attendingYes;
     });
   });
@@ -23,27 +29,41 @@ document.addEventListener('DOMContentLoaded', function () {
     status.classList.remove('is-hidden');
   }
 
+  function fail(message, focusId) {
+    showStatus(message, 'error');
+    if (focusId) field(focusId).focus();
+  }
+
   form.addEventListener('submit', function (event) {
     event.preventDefault();
 
-    var nameInput = document.getElementById('name');
-    if (!nameInput.value.trim()) {
-      showStatus('Please enter a name.', 'error');
-      nameInput.focus();
-      return;
+    if (!field('name').value.trim()) {
+      return fail('Please enter a name.', 'name');
+    }
+
+    // Deliberately loose: the browser's own email check is stricter than any
+    // rule worth writing here, and a wrong rejection is worse than a typo.
+    var email = field('email').value.trim();
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return fail('Please enter an email address we can reach you on.', 'email');
     }
 
     var attendingInput = form.querySelector('input[name="attending"]:checked');
     if (!attendingInput) {
-      showStatus("Please let us know if you're attending.", 'error');
-      return;
+      return fail("Please let us know if you're attending.");
     }
 
+    var attending = attendingInput.value === 'Yes';
+
     var payload = {
-      name: nameInput.value.trim(),
+      name: field('name').value.trim(),
+      email: email,
       attending: attendingInput.value,
-      partySize: attendingInput.value === 'Yes' ? Number(partyInput.value) : 0,
-      company: document.getElementById('company').value,
+      partySize: attending ? Number(partyInput.value) : 0,
+      guestNames: attending ? field('guestNames').value.trim() : '',
+      dietary: attending ? field('dietary').value.trim() : '',
+      message: field('message').value.trim(),
+      company: field('company').value,
     };
 
     submitButton.disabled = true;
@@ -64,7 +84,9 @@ document.addEventListener('DOMContentLoaded', function () {
           throw new Error(result.data && result.data.error ? result.data.error : 'Something went wrong.');
         }
         form.reset();
-        partyField.classList.add('is-hidden');
+        partyFields.forEach(function (el) {
+          el.classList.add('is-hidden');
+        });
         form.classList.add('is-hidden');
         showStatus("Thank you — we've got your RSVP.", 'success');
       })

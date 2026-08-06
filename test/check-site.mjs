@@ -4,7 +4,7 @@ import { chromium } from 'playwright';
 import { startServer } from './server.mjs';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
-const PAGES = ['index', 'our-story', 'rsvp', '404'];
+const PAGES = ['index', 'our-story', 'the-day', 'travel', 'rsvp', '404'];
 const WIDTHS = [1280, 768, 390, 360, 320];
 
 let failures = 0;
@@ -73,6 +73,7 @@ try {
             headerHeight: +el('.site-header').getBoundingClientRect().height.toFixed(2),
             navTop: +el('.site-header nav a').getBoundingClientRect().top.toFixed(2),
             rule: +rule.top.toFixed(2),
+            hasMark: !!el('.page-mark'),
             ruleCentre: +(rule.left + rule.width / 2).toFixed(2),
             // body, not documentElement: clientWidth on the root includes the
             // reserved gutter, so it cannot see the width the content gets.
@@ -89,7 +90,7 @@ try {
         navTops.add(m.navTop);
         contentWidths.add(m.contentWidth);
         ruleCentres.add(m.ruleCentre);
-        rulePositions[name] = m.rule;
+        rulePositions[name] = { top: m.rule, hasMark: m.hasMark };
 
         // Without a reserved gutter, pages that scroll are narrower than
         // pages that don't wherever scrollbars take up space, which pulls
@@ -108,13 +109,21 @@ try {
       // The current-page underline must occupy space on every link, or the
       // nav sits a pixel or two higher on the pages that have one.
       check('nav sits on the same line across pages', navTops.size === 1, `${at}: ${[...navTops].join(', ')}`);
-      // Both interior pages open with a mark, an eyebrow, a title and a rule —
-      // the rule has to land on the same pixel or the pages look misaligned.
-      check(
-        'rule aligns across interior pages',
-        rulePositions['our-story'] === rulePositions['rsvp'],
-        `${at}: our-story ${rulePositions['our-story']} vs rsvp ${rulePositions['rsvp']}`
-      );
+      // Interior pages open with an optional mark, an eyebrow, a title and a
+      // rule. Pages carrying a mark sit lower by exactly the mark's height, so
+      // compare like with like: the rule must land on the same pixel within
+      // each group, or those pages look misaligned against each other.
+      for (const withMark of [true, false]) {
+        const group = ['our-story', 'the-day', 'travel', 'rsvp']
+          .filter((n) => rulePositions[n].hasMark === withMark);
+        if (group.length < 2) continue;
+        const tops = group.map((n) => rulePositions[n].top);
+        check(
+          `rule aligns across interior pages ${withMark ? 'with' : 'without'} a mark`,
+          new Set(tops).size === 1,
+          `${at}: ${group.map((n, i) => `${n} ${tops[i]}`).join(', ')}`
+        );
+      }
       check('content width matches across pages', contentWidths.size === 1, `${at}: ${[...contentWidths].join(', ')}`);
       check('rule is centred on the same pixel across pages', ruleCentres.size === 1, `${at}: ${[...ruleCentres].join(', ')}`);
 
@@ -223,21 +232,34 @@ try {
     const page = await browser.newPage({ viewport: { width: 390, height: 800 } });
     await page.goto(`${base}/rsvp.html`);
 
-    check('party size hidden until attending is chosen',
-      await page.locator('.field-party').isHidden());
+    const partyCount = await page.locator('.field-party').count();
+    check('guest-only fields exist', partyCount === 3, `found ${partyCount}`);
+    check('guest-only fields hidden until attending is chosen',
+      await page.locator('.field-party').first().isHidden());
     await page.click('label[for="attendingYes"]');
-    check('party size shown after choosing yes',
-      await page.locator('.field-party').isVisible());
+    for (const id of ['partySize', 'guestNames', 'dietary']) {
+      check(`${id} shown after choosing yes`, await page.locator('#' + id).isVisible());
+    }
     await page.click('label[for="attendingNo"]');
-    check('party size hidden again after choosing no',
-      await page.locator('.field-party').isHidden());
+    check('guest-only fields hidden again after choosing no',
+      await page.locator('.field-party').first().isHidden());
+    check('message stays visible for people who cannot come',
+      await page.locator('#message').isVisible());
 
-    // Submitting with no name must be caught here, not at the worker.
+    // Submitting must be caught here, not at the worker.
     await page.click('.rsvp-submit');
     check('empty name is rejected client-side',
       await page.locator('#rsvpStatus').isVisible());
     check('empty name focuses the field',
       await page.evaluate(() => document.activeElement.id) === 'name');
+
+    await page.fill('#name', 'Test Guest');
+    await page.fill('#email', 'not-an-email');
+    await page.click('.rsvp-submit');
+    check('bad email is rejected client-side',
+      (await page.locator('#rsvpStatus').textContent()).includes('email'));
+    check('bad email focuses the field',
+      await page.evaluate(() => document.activeElement.id) === 'email');
 
     // Drive the success state directly — the real submit needs the worker.
     await page.evaluate(() => {

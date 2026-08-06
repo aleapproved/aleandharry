@@ -2,6 +2,7 @@ const ALLOWED_ORIGIN = "https://aleandharry.com";
 const AIRTABLE_BASE_ID = "appzg1GJnurC95pqv";
 const AIRTABLE_TABLE_ID = "tblN2FjbFfsoTGJkH";
 const MAX_PARTY_SIZE = 20;
+const MAX_LENGTHS = { name: 200, email: 200, guestNames: 2000, dietary: 1000, message: 2000 };
 
 function corsHeaders() {
   return {
@@ -18,24 +19,44 @@ function jsonResponse(status, body) {
   });
 }
 
+function text(value, field) {
+  const trimmed = typeof value === "string" ? value.trim() : "";
+  return trimmed.slice(0, MAX_LENGTHS[field]);
+}
+
 function validate(payload) {
-  const name = typeof payload.name === "string" ? payload.name.trim() : "";
+  const name = text(payload.name, "name");
+  const email = text(payload.email, "email");
   const attending = payload.attending;
   const partySize = Number(payload.partySize);
+  const message = text(payload.message, "message");
 
-  if (!name || name.length > 200) {
+  if (!name) {
     return { error: "Please enter a name." };
+  }
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return { error: "Please enter an email address we can reach you on." };
   }
   if (attending !== "Yes" && attending !== "No") {
     return { error: "Please specify whether you're attending." };
   }
+  // Someone who isn't coming has no party, no seats and no dietary needs, so
+  // those fields are dropped rather than stored as stale text.
   if (attending === "No") {
-    return { name, attending, partySize: 0 };
+    return { name, email, attending, partySize: 0, guestNames: "", dietary: "", message };
   }
   if (!Number.isInteger(partySize) || partySize < 1 || partySize > MAX_PARTY_SIZE) {
     return { error: "Party size must be a whole number between 1 and " + MAX_PARTY_SIZE + "." };
   }
-  return { name, attending, partySize };
+  return {
+    name,
+    email,
+    attending,
+    partySize,
+    guestNames: text(payload.guestNames, "guestNames"),
+    dietary: text(payload.dietary, "dietary"),
+    message,
+  };
 }
 
 export default {
@@ -78,8 +99,12 @@ export default {
             {
               fields: {
                 Name: result.name,
+                Email: result.email,
                 Attending: result.attending,
                 "Party Size": result.partySize,
+                "Guest Names": result.guestNames,
+                "Dietary Requirements": result.dietary,
+                Message: result.message,
               },
             },
           ],
