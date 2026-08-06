@@ -1,27 +1,48 @@
 name: pages
 
-# Publishes to Cloudflare Pages. The site is hand-written static HTML with no
-# build step, so this stages the files that make up the site and uploads them.
-# Staging rather than uploading the repo root keeps the checks, the badge
-# tooling and the worker's source off the public site: they belong in the
-# repo, not at aleandharry.com/worker/src/index.js.
+# Checks the site, then publishes it to Cloudflare Pages. The two are one
+# workflow because they are one decision: nothing reaches aleandharry.com that
+# the checks have not passed. Run separately they raced, and the deploy
+# usually won.
+#
+# The site is hand-written static HTML with no build step, so the deploy stages
+# the files that make up the site and uploads them. Staging rather than
+# uploading the repo root keeps the checks, the badge tooling and the worker's
+# source off the public site: they belong in the repo, not at
+# aleandharry.com/worker/src/index.js.
 
 on:
   push:
     branches: [main]
+  pull_request:
   workflow_dispatch:
 
 permissions:
   contents: read
 
 # Queue pushes rather than cancelling the one in flight, so a cancelled deploy
-# cannot leave a half-uploaded site published.
+# cannot leave a half-uploaded site published. Keyed by ref so a pull request
+# waits behind its own runs and not behind a deploy of main.
 concurrency:
-  group: pages
+  group: pages-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm test
+
   deploy:
+    needs: check
+    # A pull request gets the checks and stops there; only main publishes.
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

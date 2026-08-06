@@ -142,10 +142,18 @@ things that are easy to break by accident:
 
 ## Deploying
 
-Pushing to `main` runs `.github/workflows/pages.yml`, which stages the site and
-uploads it with `wrangler pages deploy`. It needs one repo secret,
-`CLOUDFLARE_API_TOKEN`, with Cloudflare Pages edit rights; the account ID is in
-the workflow, since on its own it authorises nothing.
+Pushing to `main` runs `.github/workflows/pages.yml`, which runs the checks
+above and then, only if they pass, stages the site and uploads it with
+`wrangler pages deploy`. A pull request gets the checks and stops there. It
+needs one repo secret, `CLOUDFLARE_API_TOKEN`, with Cloudflare Pages edit
+rights; the account ID is in the workflow, since on its own it authorises
+nothing.
+
+The deploy stays here rather than moving to Cloudflare Pages' own Git
+integration, which would publish the moment you push and cannot be made to
+wait for a check. Gating it there would mean running the checks in the Pages
+build container, which has no root and so cannot install Chromium's system
+dependencies.
 
 DNS for aleandharry.com is on Cloudflare. The apex and `www` resolve to the
 Pages project; the Fastmail `MX` records are untouched by any of this and must
