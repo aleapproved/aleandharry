@@ -1,8 +1,10 @@
 name: pages
 
-# Publishes the repo as-is. The site is hand-written static HTML, so there is
-# nothing to build — this uploads the files and hands them to Pages directly,
-# instead of the legacy pipeline running Jekyll over them for no reason.
+# Publishes to Cloudflare Pages. The site is hand-written static HTML with no
+# build step, so this stages the files that make up the site and uploads them.
+# Staging rather than uploading the repo root keeps the checks, the badge
+# tooling and the worker's source off the public site: they belong in the
+# repo, not at aleandharry.com/worker/src/index.js.
 
 on:
   push:
@@ -11,11 +13,9 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
-# Queue pushes rather than cancelling the one in flight: a cancelled deploy
-# leaves the previous one published and is easy to mistake for a hang.
+# Queue pushes rather than cancelling the one in flight, so a cancelled deploy
+# cannot leave a half-uploaded site published.
 concurrency:
   group: pages
   cancel-in-progress: false
@@ -23,19 +23,30 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
+
+      - name: Stage the site
+        run: |
+          mkdir _site
+          rsync -a \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='_site' \
+            --exclude='node_modules' \
+            --exclude='test' \
+            --exclude='tools' \
+            --exclude='worker' \
+            --exclude='*.md' \
+            --exclude='package.json' \
+            --exclude='package-lock.json' \
+            . _site/
+
+      - uses: cloudflare/wrangler-action@v3
         with:
-          path: .
-      - id: deployment
-        uses: actions/deploy-pages@v4
-        with:
-          # Default is 10 minutes, which GitHub's publish step has been
-          # overrunning — the deployment reaches deployment_in_progress and
-          # then gets aborted mid-flight. Give it room rather than retrying.
-          timeout: 1800000
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          # Not a secret: the account ID identifies the account but authorises
+          # nothing without the token above, and Cloudflare puts it in dashboard
+          # URLs. Naming it here beats a second repo secret to keep in sync.
+          accountId: 010ccfd71330e904562ca7fa44707d68
+          command: pages deploy _site --project-name=aleandharry --branch=main
