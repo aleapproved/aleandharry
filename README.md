@@ -42,6 +42,23 @@ counts down to the same instant rather than their own local midnight; edit
 that string when there's a start time. Visitors who ask for reduced motion
 get a static day count instead of a ticking one.
 
+## Type
+
+Inter, matching alessandrogillies.com, self-hosted at
+`fonts/InterVariable.woff2` and preloaded on every page. It is subset to Latin
+and Latin Extended — 141KB rather than the full 352KB — with the weight and
+optical-size axes intact. Regenerate a subset with:
+
+```bash
+python3 -m fontTools.subset InterVariable.woff2 \
+  --unicodes="U+0000-00FF,U+0100-017F,U+2000-206F,U+20AC,U+2122,U+2212,U+FEFF,U+FFFD" \
+  --layout-features='*' --flavor=woff2 --output-file=fonts/InterVariable.woff2
+```
+
+**No italics anywhere** — colour, weight and size carry those distinctions
+instead. Only the upright font ships, so an italic would be synthesised and
+look wrong as well as reading poorly.
+
 ## Artwork
 
 `tools/make-badge.py` cuts a character out of its original white-background

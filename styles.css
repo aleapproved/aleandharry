@@ -1,3 +1,13 @@
+/* Inter, matching alessandrogillies.com. Subset to Latin and Latin Extended,
+   which takes it from 352KB to 141KB; both variable axes are intact. */
+@font-face {
+  font-family: Inter;
+  src: url('/fonts/InterVariable.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* Light palette (Solrock). */
 :root {
   color-scheme: light;
@@ -69,7 +79,7 @@ body {
   min-height: 100vh;
   background: var(--paper);
   color: var(--ink);
-  font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
@@ -125,7 +135,6 @@ input {
 }
 
 .site-header .brand .amp {
-  font-style: italic;
   color: var(--accent);
 }
 
@@ -184,16 +193,17 @@ main.centered {
 
 h1 {
   font-size: clamp(2.5rem, 6vw, 4rem);
-  font-weight: 400;
+  font-weight: 300;
+  letter-spacing: -0.02em;
   margin: 0 0 1rem;
   line-height: 1.15;
 }
 
 h1 .amp {
   display: block;
-  font-style: italic;
   color: var(--accent);
   font-size: 0.6em;
+  font-weight: 300;
   margin: 0.25em 0;
 }
 
@@ -211,7 +221,7 @@ p {
 
 p.quote {
   font-size: 1.3rem;
-  font-style: italic;
+  font-weight: 300;
 }
 
 .theme-toggle {
@@ -308,7 +318,6 @@ p.quote {
 
 .moment figcaption {
   margin-top: 1.25rem;
-  font-style: italic;
   font-size: 0.95rem;
   color: var(--accent);
 }
@@ -480,7 +489,6 @@ p.quote {
   margin-top: 0.5rem;
   font-size: 0.95rem;
   color: var(--accent);
-  font-style: italic;
   /* The seconds change width every tick; tabular figures stop the centred
      line shuffling sideways once a second. */
   font-variant-numeric: tabular-nums;
@@ -490,7 +498,6 @@ p.quote {
 /* Nothing is booked yet, so anything provisional says so in the same voice
    everywhere rather than each page inventing its own hedge. */
 .tbc {
-  font-style: italic;
   color: var(--ink-soft);
   opacity: 0.85;
 }
