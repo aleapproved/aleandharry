@@ -35,6 +35,13 @@ The date is **provisional**: Friday 16 June 2028, nine years to the day from
 the first date. It appears on the homepage and The Day, both captioned as
 not yet booked.
 
+The homepage countdown ticks every second. Its target lives in one place —
+the `data-target` attribute on `#countdown` in `index.html`, currently
+`2028-06-16T00:00:00+01:00`. It carries an explicit offset so every guest
+counts down to the same instant rather than their own local midnight; edit
+that string when there's a start time. Visitors who ask for reduced motion
+get a static day count instead of a ticking one.
+
 ## Artwork
 
 `tools/make-badge.py` cuts a character out of its original white-background

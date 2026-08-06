@@ -481,6 +481,10 @@ p.quote {
   font-size: 0.95rem;
   color: var(--accent);
   font-style: italic;
+  /* The seconds change width every tick; tabular figures stop the centred
+     line shuffling sideways once a second. */
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
 }
 
 /* Nothing is booked yet, so anything provisional says so in the same voice
@@ -604,23 +608,34 @@ p.quote {
   }
 }
 
-/* Four nav links no longer fit beside the brand on a phone, so the header
-   wraps deliberately rather than squashing anything. */
+/* Five nav links no longer fit beside the brand on a phone. Rather than
+   squash anything, the header becomes two rows: brand and toggle at the
+   edges, nav centred underneath. Dissolving .nav-group with display:contents
+   lets its two children take part in the header's own wrap. */
 @media (max-width: 32rem) {
   .site-header {
     flex-wrap: wrap;
-    justify-content: center;
     gap: 0.85rem;
   }
 
-  .site-header .brand {
-    width: 100%;
-    text-align: center;
+  .site-header .nav-group {
+    display: contents;
   }
 
-  .site-header .nav-group {
+  .site-header .brand {
+    order: 1;
+  }
+
+  .site-header .theme-toggle {
+    order: 2;
+  }
+
+  .site-header nav {
+    order: 3;
     width: 100%;
     justify-content: center;
+    flex-wrap: wrap;
+    row-gap: 0.5rem;
   }
 }
 
