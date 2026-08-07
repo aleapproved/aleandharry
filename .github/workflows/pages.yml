@@ -77,7 +77,7 @@ jobs:
             exit 1
           fi
 
-      - uses: cloudflare/wrangler-action@v3
+      - uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           # Not a secret: the account ID identifies the account but authorises
