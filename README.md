@@ -29,9 +29,9 @@ Two things to know while poking around:
 ## Pages
 
 `index` (names, provisional date, countdown), `our-story`, `the-day`,
-`travel`, `rsvp`, `404`. The Day and Travel are deliberately full of
-placeholders, since nothing is booked yet, styled with `.tbc` so every
-unconfirmed fact hedges in the same voice.
+`travel`, `rsvp`, `404`, and `game`, which is unlinked. The Day and Travel are
+deliberately full of placeholders, since nothing is booked yet, styled with
+`.tbc` so every unconfirmed fact hedges in the same voice.
 
 Interior pages open with their mark, then their name as the only heading, and
 nothing between that and the content. Every page ends with the same footer
@@ -96,6 +96,14 @@ python3 tools/make-badge.py "images/mudkip (1).jpg" images/mudkip-badge.png --he
 python3 tools/make-badge.py images/solrock.jpg images/solrock-icon.png --canvas 108 108 --content-scale 0.885
 ```
 
+Solrock and Lunatone have a 264px badge as well as their 108px toggle icon,
+because the safari needs all seven at the same size:
+
+```bash
+python3 tools/make-badge.py images/solrock.jpg images/solrock-badge.png --height 264
+python3 tools/make-badge.py images/lunatone.jpg images/lunatone-badge.png --height 264
+```
+
 Artwork that already has an alpha channel is used as-is; only white-background
 art gets flooded. The source images in `images/` are inputs to this tool,
 so don't delete them.
@@ -149,6 +157,12 @@ things that are easy to break by accident:
 - the guest-only fields reveal and hide with the attending choice
 - photos enlarge whole, keep the header visible, and close every way out
 - badge cutouts have no interior holes
+- the safari stays out of the nav and out of search, every page mark is a way
+  in to it and every one of those links is named for a screen reader, it keeps
+  a heading that costs no pixels, its Pokédex starts above the fold on a short
+  laptop, all seven of its sprites resolve, a throw runs all the way through,
+  Solrock and Lunatone keep to their own half of the day, and a collection
+  survives both a reload and a save that has been damaged since it was written
 
 ## Deploying
 
@@ -159,7 +173,7 @@ needs one repo secret, `CLOUDFLARE_API_TOKEN`, with Cloudflare Pages edit
 rights; the account ID is in the workflow, since on its own it authorises
 nothing.
 
-The deploy stamps a content hash into the URL of the stylesheet and each
+The deploy stamps a content hash into the URL of both stylesheets and each
 script as it stages them, so the pages ask for `/styles.css?v=1a2b3c4d5e`.
 Pages revalidate on every load but assets are cached for four hours, and
 without this a deploy that changed both left visitors running new markup
@@ -180,6 +194,78 @@ Pages project; the Fastmail `MX` records are untouched by any of this and must
 stay that way. If a deploy ever needs backing out in a hurry, the site is
 static and every previous deployment stays addressable in the Pages dashboard,
 so rolling back is a promotion rather than a revert.
+
+## The safari
+
+`/game` is unlisted: the nav never names it and it carries `noindex`. The way
+in is the marks. Every `.page-mark` on the site is wrapped in a link to it, so
+whichever Pokémon a visitor reaches for is the one that opens the door, and a
+mark left unwrapped would be a dead one among live ones. The checks assert all
+of that, and that the link leaves the mark on exactly the pixel it was on.
+
+Because the artwork is deliberately `alt=""`, each link carries its own
+`aria-label` ("Catch a Chansey"). A screen reader gets told where it goes
+rather than being handed a mystery.
+
+It is a small Pokémon catching game, and it is the only part of the site with
+rules.
+
+The whole of it is `game.html`, `game.css` and `game.js`. None of the three is
+loaded anywhere else and `styles.css` knows nothing about them, so the game can
+be as elaborate as it likes without a line of it reaching the other pages. It
+borrows the site's paper, ink and accent and takes the default palette, which
+is Solrock cream by day and Lunatone purple by night.
+
+**The page opens on the stage.** There is no visible heading and no standfirst
+above it, because with them there the Pokédex sat below the fold on an ordinary
+laptop and the page read as ending at the stage. The `<h1>` is still in the
+markup, visually hidden, so the document has a name for a screen reader; the
+checks assert it is there, that it takes up no room, and that the Pokédex
+starts above the fold at 800px and 720px tall. It is the kind of markup
+somebody deletes as dead, so it is worth a check.
+
+The one sentence that standfirst was carrying, how to play, moved into the
+status line under the stage. It is appended to the first encounter a visitor
+with an empty save sees and never shown again.
+
+**The mechanic.** A ring falls inwards around a Pokémon and the throw is
+scored on how close it was to the fixed circle when the ball left your hand:
+Perfect doubles the odds, Wide two-thirds them. Three balls an encounter, and
+the Pokémon stays until they are gone. Nothing is timed and nothing can be
+lost by waiting, which is the right amount of pressure for a wedding website.
+
+**The seven** are the site's own Pokémon, one per page, which is why there are
+seven and not a hundred and fifty. Each has a spawn weight, a base catch rate
+and a ring speed, so the rare ones are also the harder throws. Solrock and
+Lunatone are `only: 'day'` and `only: 'night'` and are drawn from the theme,
+which makes the header's toggle part of the game: you cannot finish the
+Pokédex without using it. The clue is in each one's entry.
+
+Shinies are one in forty and are the same drawing under a per-species
+`hue-rotate`, tuned so each is unmistakable against its ordinary colours. A
+shiny in the collection puts a second ring on that entry; the entry itself
+keeps the ordinary artwork, since a recoloured one in the middle of the row
+just looks wrong.
+
+**Progress** lives in `localStorage` under `aleandharry:safari:v1`, so a
+collection survives closing the tab and nobody is ever asked who they are.
+It is read back field by field rather than trusted, because the one thing that
+must not happen is a save edited in the console taking the page down. A
+browser that refuses to store anything still plays and says so.
+
+Run `localStorage.removeItem('aleandharry:safari:v1')` to get back to a first
+visit, or use the page's own **Release them all**, which asks twice.
+
+**Sound** is synthesised with the Web Audio API rather than shipped as files,
+so it costs nothing to download. It is off until the speaker on the stage is
+pressed, and that choice is kept: a website that starts making noise at you
+has lost the argument. The preference survives **Release them all**, since it
+is a setting rather than progress.
+
+**Motion.** Reduced motion keeps the ring, which is the game, but slows it by
+a little over half and drops the idle bob, the shiny's glint and the burst on
+a catch. The pauses that exist so a line can be read are left at full length;
+only the ones waiting on a movement are shortened.
 
 ## The RSVP worker
 

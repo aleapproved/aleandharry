@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en" data-paper="#f7ecdd" data-paper-dark="#1b1830">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Safari &ndash; Ale &amp; Harry</title>
+  <meta name="description" content="Seven Pokémon live on this website.">
+  <!-- Unlinked from the nav and kept out of search: finding it is the point. -->
+  <meta name="robots" content="noindex">
+
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <meta name="theme-color" content="#f7ecdd">
+  <script>
+    (function () {
+      try {
+        var root = document.documentElement;
+        var saved = localStorage.getItem('theme');
+        var theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        root.setAttribute('data-theme', theme);
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute('content', theme === 'dark' ? root.dataset.paperDark : root.dataset.paper);
+      } catch (e) {}
+    })();
+  </script>
+
+  <link rel="preload" href="/fonts/InterVariable.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/game.css">
+</head>
+<body>
+  <header class="site-header">
+    <a href="/" class="brand">Ale <span class="amp">&amp;</span> Harry</a>
+    <div class="nav-group">
+      <nav>
+        <a href="/">Home</a>
+        <a href="/our-story">Hale</a>
+        <a href="/the-day">The Day</a>
+        <a href="/travel">Travel</a>
+        <a href="/rsvp">RSVP</a>
+      </nav>
+      <button id="themeToggle" class="theme-toggle" aria-label="Toggle dark mode" type="button">
+        <img class="theme-icon-light" src="/images/solrock-icon.png" alt="" aria-hidden="true">
+        <img class="theme-icon-dark" src="/images/lunatone-icon.png" alt="" aria-hidden="true">
+      </button>
+    </div>
+  </header>
+
+  <main class="game">
+    <!-- The page opens on the stage itself, so that what is under it shows
+         above the fold and reads as a page rather than as a dead end. The
+         name stays for the document outline: a screen reader arriving at a
+         page with no heading at all is worse than a heading nobody sees. -->
+    <h1 class="visually-hidden">Safari</h1>
+
+    <noscript>
+      <p class="game-lede game-noscript">The safari needs JavaScript. Everything else here works without it.</p>
+    </noscript>
+
+    <div class="stage-wrap" id="stageWrap" hidden>
+      <button class="stage" id="stage" type="button" aria-label="Throw a Poké Ball" aria-describedby="gameStatus">
+        <span class="stage-glow" aria-hidden="true"></span>
+        <span class="creature" id="creature" aria-hidden="true">
+          <span class="creature-shadow"></span>
+          <span class="creature-bob"><img id="creatureArt" src="/images/mudkip-badge.png" alt=""></span>
+          <span class="creature-sparkle" id="creatureSparkle"></span>
+        </span>
+        <span class="ring-target" id="ringTarget" aria-hidden="true"></span>
+        <span class="ring" id="ring" aria-hidden="true"></span>
+        <span class="flash" id="flash" aria-hidden="true"></span>
+        <span class="ball-x" id="ballX" aria-hidden="true">
+          <span class="ball-y" id="ballY">
+            <span class="ball-spin" id="ballSpin"><span class="ball"></span></span>
+          </span>
+        </span>
+        <span class="bursts" id="bursts" aria-hidden="true"></span>
+        <span class="verdict" id="verdict" aria-hidden="true"></span>
+      </button>
+
+      <button class="stage-mute" id="soundToggle" type="button" aria-pressed="false" aria-label="Sound off">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path class="mute-horn" d="M4 9.5h3.6L12 5.6v12.8L7.6 14.5H4z"></path>
+          <path class="mute-wave-1" d="M15.2 9.4a3.6 3.6 0 0 1 0 5.2"></path>
+          <path class="mute-wave-2" d="M17.8 7.1a7 7 0 0 1 0 9.8"></path>
+          <path class="mute-slash" d="M15.4 9.6l5 4.8"></path>
+        </svg>
+      </button>
+    </div>
+
+    <div class="balls" id="ballCount" aria-hidden="true" hidden></div>
+    <p class="game-status" id="gameStatus" role="status" aria-live="polite"></p>
+
+    <section class="dex" id="dex" aria-labelledby="dexHeading" hidden>
+      <h2 id="dexHeading" class="dex-heading">Pokédex</h2>
+      <div class="dex-row" id="dexRow"></div>
+      <p class="dex-caption" id="dexCaption"></p>
+    </section>
+
+    <dl class="stats" id="stats" hidden>
+      <div class="stat"><dt>Caught</dt><dd id="statCaught">0</dd></div>
+      <div class="stat"><dt>Species</dt><dd id="statSpecies">0/7</dd></div>
+      <div class="stat"><dt>Streak</dt><dd id="statStreak">0</dd></div>
+      <div class="stat"><dt>Best</dt><dd id="statBest">0</dd></div>
+    </dl>
+
+    <p class="game-reset" id="resetWrap" hidden>
+      <button class="ghost-button" id="resetBtn" type="button">Release them all</button>
+    </p>
+  </main>
+
+  <footer class="site-footer">
+    <p>Any questions, ask us: <a href="mailto:rsvp@aleandharry.com">rsvp@aleandharry.com</a></p>
+  </footer>
+
+  <script src="/theme-toggle.js" defer></script>
+  <script src="/game.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,838 @@
+/* The safari at /game. Everything here is scoped to that page: it borrows the
+   site's paper, ink and accent and adds nothing to the pages that link to each
+   other, so the game can be as elaborate as it likes without any of it
+   reaching the rest of the site.
+
+   The page wears the default palette, which is Solrock cream by day and
+   Lunatone purple by night. That is not decoration: those two only appear in
+   their own half of the day, so the theme toggle is part of the game. */
+
+body {
+  /* Uncaught entries in the Pokédex are shown as silhouettes, which means
+     painting the artwork flat in the ink colour rather than in black. One
+     filter can do both schemes if the inversion is a variable. */
+  --silhouette: 0;
+
+  /* The bottom half of a Poké Ball. It cannot be the paper: at night the
+     paper is nearly black and the ball loses its lower half entirely. A
+     near-white carrying a trace of the page's accent stays a Poké Ball in
+     both schemes and still belongs to the page it is on. */
+  --ball-base: color-mix(in srgb, white 88%, var(--accent));
+}
+
+:root[data-theme="dark"] body {
+  --silhouette: 1;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) body {
+    --silhouette: 1;
+  }
+}
+
+/* Every part of the game is hidden in the markup and revealed by the script,
+   so a visitor without JavaScript gets the note and nothing half-built. The
+   flex containers below would otherwise out-specify the browser's own rule
+   for the attribute and show anyway. */
+[hidden] {
+  display: none !important;
+}
+
+/* No title to frame, so the page does not need a title's worth of air above
+   the stage either. Every pixel taken off the top is a pixel of the Pokédex
+   showing at the bottom, which is the whole reason the heading went. */
+.game {
+  padding-top: 2.5rem;
+  padding-bottom: 3.5rem;
+}
+
+/* Same technique as the radios in the RSVP toggle group: out of sight,
+   still in the accessibility tree. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Only the noscript note wears this now. */
+.game-lede {
+  margin-top: 1.25rem;
+  max-width: 26rem;
+  font-size: 0.95rem;
+}
+
+.game-noscript {
+  color: var(--accent);
+}
+
+/* ---------------------------------------------------------------
+   The stage. A square vitrine the encounter happens inside, sized
+   by the column so it is never wider than the page's own measure.
+   --------------------------------------------------------------- */
+
+/* The stage is now the first thing on the page, so the gap it used to keep
+   from the lede belongs to main's padding instead. */
+.stage-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 27rem;
+  margin: 0 auto;
+}
+
+.stage {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  font: inherit;
+  color: inherit;
+  background: var(--paper);
+  border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+  border-radius: 6px;
+  box-shadow: 0 1.5rem 3rem -1.75rem rgb(var(--shadow) / 0.4);
+  cursor: pointer;
+  /* A stage is dragged, double-tapped and long-pressed at by anyone playing
+     on a phone. None of those should select artwork, zoom the page or open a
+     context menu over the encounter. */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  touch-action: manipulation;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+@media (hover: hover) {
+  .stage:hover:not([aria-disabled="true"]) {
+    border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  }
+}
+
+/* Not the disabled attribute: a keyboard player focused on the stage would
+   lose that focus the moment a throw started and never get it back. */
+.stage[aria-disabled="true"] {
+  cursor: default;
+}
+
+/* Light coming from where the Pokémon stands, and the ground implied rather
+   than drawn. A horizon line here read as a cheap backdrop; a wash does the
+   same job and leaves the artwork as the only thing with an edge. */
+.stage-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 50% 44%,
+      color-mix(in srgb, var(--accent) 14%, transparent) 0%,
+      transparent 58%),
+    linear-gradient(to bottom,
+      transparent 52%,
+      color-mix(in srgb, var(--accent) 8%, transparent) 100%);
+}
+
+/* ---------------------------------------------------------------
+   The Pokémon. Locked by height like the marks elsewhere on the
+   site, so a wide one and a tall one read at the same size.
+   --------------------------------------------------------------- */
+
+.creature {
+  position: absolute;
+  top: 46%;
+  left: 50%;
+  height: 34%;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.creature img {
+  display: block;
+  height: 100%;
+  width: auto;
+  -webkit-user-drag: none;
+  /* Set per species by the script, so a shiny is the same drawing in an
+     unmistakably different colour. */
+  filter: var(--tint, none);
+}
+
+.creature-bob {
+  display: block;
+  height: 100%;
+  animation: bob 3.4s ease-in-out infinite;
+}
+
+@keyframes bob {
+  0%, 100% { transform: translateY(2%); }
+  50% { transform: translateY(-4%); }
+}
+
+.creature-shadow {
+  position: absolute;
+  left: 50%;
+  bottom: -7%;
+  width: 78%;
+  height: 9%;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center,
+    rgb(var(--shadow) / 0.28) 0%,
+    rgb(var(--shadow) / 0.10) 55%,
+    transparent 75%);
+  animation: shadow-bob 3.4s ease-in-out infinite;
+}
+
+@keyframes shadow-bob {
+  0%, 100% { transform: translateX(-50%) scale(1.04); }
+  50% { transform: translateX(-50%) scale(0.9); }
+}
+
+/* Arriving and leaving. Entrances come up from the ground, exits fade back
+   into it, and a capture pulls the whole thing into the ball. */
+.creature.is-in {
+  opacity: 1;
+}
+
+.creature.is-arriving {
+  animation: arrive 0.45s cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+@keyframes arrive {
+  from { transform: translate(-50%, -38%) scale(0.72); opacity: 0; }
+  to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}
+
+.creature.is-captured {
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.12);
+  transition-duration: 0.22s;
+}
+
+.creature.is-fleeing {
+  opacity: 0;
+  transform: translate(-50%, -42%) scale(0.85);
+}
+
+/* A shiny announces itself with four points of light rather than a label. */
+.creature-sparkle {
+  position: absolute;
+  inset: -12%;
+  opacity: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 12% 22%, color-mix(in srgb, var(--accent) 85%, white) 0 1.5px, transparent 2px),
+    radial-gradient(circle at 88% 34%, color-mix(in srgb, var(--accent) 85%, white) 0 2px, transparent 3px),
+    radial-gradient(circle at 26% 84%, color-mix(in srgb, var(--accent) 85%, white) 0 1.5px, transparent 2px),
+    radial-gradient(circle at 72% 12%, color-mix(in srgb, var(--accent) 85%, white) 0 2.5px, transparent 3.5px);
+}
+
+.creature.is-shiny .creature-sparkle {
+  animation: sparkle 2.6s ease-in-out infinite;
+}
+
+@keyframes sparkle {
+  0%, 70%, 100% { opacity: 0; transform: scale(0.92); }
+  12% { opacity: 1; transform: scale(1); }
+  30% { opacity: 0.25; transform: scale(1.04); }
+  45% { opacity: 0.9; transform: scale(1); }
+}
+
+/* ---------------------------------------------------------------
+   The timing ring. One ring falls inwards, one waits; the throw is
+   scored on how close the two were when it left your hand.
+   --------------------------------------------------------------- */
+
+.ring-target,
+.ring {
+  position: absolute;
+  top: 46%;
+  left: 50%;
+  width: 46%;
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.ring-target {
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+.ring {
+  border: 2px solid var(--accent);
+  /* Scale and opacity are written frame by frame, so no transition may sit
+     between the script and the ring or the timing stops being honest. */
+  transition: none;
+}
+
+.ring-target.is-live,
+.ring.is-live {
+  opacity: 1;
+}
+
+/* The moment of the throw: the ring stops where it was and blooms outwards,
+   so you see what you actually hit. */
+.ring.is-struck {
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  opacity: 0;
+}
+
+.ring-target.is-struck {
+  animation: target-pulse 0.4s ease-out;
+}
+
+@keyframes target-pulse {
+  from { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 45%, transparent); }
+  to { box-shadow: 0 0 0 0.9rem transparent; }
+}
+
+/* ---------------------------------------------------------------
+   The ball. Three nested elements so the three motions never fight:
+   x carries the throw across, y arcs it up and drops it, spin turns
+   it and wobbles it once it has landed.
+   --------------------------------------------------------------- */
+
+.ball-x {
+  position: absolute;
+  left: 24%;
+  bottom: 9%;
+  width: max(2.1rem, 12%);
+  aspect-ratio: 1 / 1;
+  margin-left: calc(max(2.1rem, 12%) / -2);
+  transform: translateX(0);
+  pointer-events: none;
+  transition: transform 0.42s linear;
+}
+
+.ball-y,
+.ball-spin,
+.ball {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* The bezier dips below zero on its way, which is the arc: the ball rises
+   past the line between hand and target before it comes down on it. */
+.ball-y {
+  transform: translateY(0);
+  transition: transform 0.42s cubic-bezier(0.25, -0.55, 0.45, 1);
+}
+
+.ball-spin {
+  transform: rotate(0deg);
+  transition: transform 0.42s linear;
+}
+
+/* Drawn rather than drafted in, so it takes the page's accent and stays sharp
+   at any size. The lid is the accent, the base is the paper, and the seam and
+   the button are the only other marks on it. */
+.ball {
+  position: relative;
+  border-radius: 50%;
+  background:
+    linear-gradient(to bottom,
+      var(--accent) 0 calc(50% - 0.5px),
+      color-mix(in srgb, var(--ink) 55%, transparent) calc(50% - 0.5px) calc(50% + 0.5px),
+      var(--ball-base) calc(50% + 0.5px) 100%);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--ink) 35%, transparent),
+    inset -0.18em -0.22em 0.35em rgb(var(--shadow) / 0.22),
+    inset 0.14em 0.16em 0.3em color-mix(in srgb, white 45%, transparent),
+    0 0.15em 0.35em rgb(var(--shadow) / 0.3);
+}
+
+.ball::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 30%;
+  height: 30%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: var(--ball-base);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--ink) 40%, transparent),
+    inset 0 0 0 1.5px color-mix(in srgb, var(--ink) 12%, transparent);
+}
+
+/* The catch: three turns of the ball, each smaller than the last. A caught
+   Pokémon gets all three and then the click; one that gets out interrupts
+   the run partway through. */
+.ball-spin.is-wobbling {
+  animation: wobble 0.72s ease-in-out;
+}
+
+@keyframes wobble {
+  0% { transform: rotate(0deg); }
+  22% { transform: rotate(-17deg); }
+  55% { transform: rotate(14deg); }
+  80% { transform: rotate(-6deg); }
+  100% { transform: rotate(0deg); }
+}
+
+.ball-x.is-caught .ball {
+  animation: ball-click 0.6s ease-out;
+}
+
+@keyframes ball-click {
+  0% { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 35%, transparent), 0 0 0 0 color-mix(in srgb, var(--accent) 60%, transparent); }
+  30% { box-shadow: inset 0 0 0 1px var(--accent), 0 0 0 0.5rem color-mix(in srgb, var(--accent) 30%, transparent); }
+  100% { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 35%, transparent), 0 0 0 1.4rem transparent; }
+}
+
+.ball-x.is-hidden {
+  opacity: 0;
+  transition: opacity 0.18s ease;
+}
+
+/* ---------------------------------------------------------------
+   Impact and release. Both are the same white bloom at the point of
+   contact, which is what keeps the two halves of a throw feeling
+   like one move.
+   --------------------------------------------------------------- */
+
+.flash {
+  position: absolute;
+  top: 46%;
+  left: 50%;
+  width: 40%;
+  aspect-ratio: 1 / 1;
+  transform: translate(-50%, -50%) scale(0.2);
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+  background: radial-gradient(circle,
+    color-mix(in srgb, white 80%, var(--accent)) 0%,
+    color-mix(in srgb, var(--accent) 70%, transparent) 45%,
+    transparent 70%);
+}
+
+.flash.is-firing {
+  animation: bloom 0.42s ease-out;
+}
+
+@keyframes bloom {
+  0% { opacity: 0.95; transform: translate(-50%, -50%) scale(0.15); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1.9); }
+}
+
+/* Six points thrown outwards from the ball on a catch. The script places
+   them; the angle each one leaves on is its own custom property. */
+.bursts {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.burst {
+  position: absolute;
+  width: 0.3rem;
+  height: 0.3rem;
+  margin: -0.15rem 0 0 -0.15rem;
+  border-radius: 50%;
+  background: var(--accent);
+  opacity: 0;
+  animation: burst 0.7s ease-out forwards;
+}
+
+@keyframes burst {
+  0% { opacity: 1; transform: rotate(var(--angle)) translateY(0) scale(1); }
+  100% { opacity: 0; transform: rotate(var(--angle)) translateY(calc(var(--reach) * -1)) scale(0.3); }
+}
+
+/* The word for the throw. It sits high in the stage rather than on the ring,
+   which is where the artwork is: over the Pokémon it was unreadable against
+   whatever colour that species happens to be. */
+.verdict {
+  position: absolute;
+  top: 12%;
+  left: 50%;
+  transform: translate(-50%, 0);
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-indent: 0.22em;
+  text-transform: uppercase;
+  color: var(--accent);
+  opacity: 0;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.verdict.is-showing {
+  animation: verdict 0.9s ease-out;
+}
+
+@keyframes verdict {
+  0% { opacity: 0; transform: translate(-50%, 0.7rem) scale(0.9); }
+  18% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+  68% { opacity: 1; transform: translate(-50%, -0.15rem) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -0.7rem) scale(1); }
+}
+
+/* ---------------------------------------------------------------
+   The mute. Same circle as the header's theme toggle, sitting on
+   the stage's corner rather than in the layout, since a control
+   for the game belongs on the game.
+   --------------------------------------------------------------- */
+
+.stage-mute {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0.35rem;
+  color: var(--ink-soft);
+  background: color-mix(in srgb, var(--paper) 80%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+}
+
+@media (hover: hover) {
+  .stage-mute:hover {
+    color: var(--ink);
+    border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  }
+}
+
+.stage-mute svg {
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.stage-mute .mute-horn {
+  fill: currentColor;
+  stroke-width: 1.2;
+}
+
+/* Off is the default, so the icon starts crossed out and the waves only
+   arrive once there is something to hear. */
+.stage-mute[aria-pressed="false"] .mute-wave-1,
+.stage-mute[aria-pressed="false"] .mute-wave-2 {
+  display: none;
+}
+
+.stage-mute[aria-pressed="true"] {
+  color: var(--accent);
+}
+
+.stage-mute[aria-pressed="true"] .mute-slash {
+  display: none;
+}
+
+/* ---------------------------------------------------------------
+   Balls left, and the line that says what just happened.
+   --------------------------------------------------------------- */
+
+.balls {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+}
+
+.pip {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  background: linear-gradient(to bottom,
+    var(--accent) 0 calc(50% - 0.5px),
+    color-mix(in srgb, var(--ink) 45%, transparent) calc(50% - 0.5px) calc(50% + 0.5px),
+    var(--ball-base) calc(50% + 0.5px) 100%);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 30%, transparent);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.pip.is-spent {
+  opacity: 0.22;
+  transform: scale(0.7);
+}
+
+.game-status {
+  min-height: 3rem;
+  margin: 0.9rem auto 0;
+  max-width: 24rem;
+  font-size: 1rem;
+  color: var(--ink);
+}
+
+.game-status .said {
+  color: var(--accent);
+}
+
+/* ---------------------------------------------------------------
+   The Pokédex. Seven places, filled or not, and one line under
+   them that answers whichever one you are pointing at.
+   --------------------------------------------------------------- */
+
+.dex {
+  width: 100%;
+  max-width: 27rem;
+  margin-top: 2.5rem;
+  padding-top: 2rem;
+  border-top: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+.dex-heading {
+  margin: 0 0 1.25rem;
+  font-size: 0.7rem;
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  text-indent: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+/* Seven columns, always. Wrapped onto two rows the collection stopped reading
+   as one shelf with gaps in it, which is the whole idea. A grid lets the
+   places shrink to fit a phone rather than breaking the line. */
+.dex-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.55rem;
+}
+
+.dex-slot {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1 / 1;
+  padding: 0.35rem;
+  background: none;
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease, transform 0.15s ease;
+}
+
+@media (hover: hover) {
+  .dex-slot:hover {
+    border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+    background: color-mix(in srgb, var(--accent) 8%, transparent);
+  }
+}
+
+.dex-slot[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.dex-slot img {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+/* Not yet caught: the same drawing, flattened to the page's ink. */
+.dex-slot.is-locked img {
+  filter: brightness(0) invert(var(--silhouette)) opacity(0.24);
+}
+
+/* A shiny in the collection puts a second ring outside the first. The entry
+   keeps the ordinary artwork: the row has to stay one row of the same seven
+   drawings, and a recoloured one in the middle of it just looks wrong. */
+.dex-slot.has-shiny {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 30%, var(--paper)),
+              0 0 0 2px color-mix(in srgb, var(--accent) 55%, transparent);
+}
+
+.dex-count {
+  position: absolute;
+  right: -0.1rem;
+  bottom: -0.1rem;
+  min-width: 1.15rem;
+  padding: 0 0.2rem;
+  font-size: 0.65rem;
+  line-height: 1.15rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--paper);
+  background: var(--accent);
+  border-radius: 999px;
+}
+
+.dex-slot.is-locked .dex-count {
+  display: none;
+}
+
+/* The entry arrives the moment a species is first caught, so the newest one
+   is the one the eye is already on. */
+.dex-slot.is-new {
+  animation: slot-in 0.6s cubic-bezier(0.34, 1.5, 0.64, 1);
+}
+
+@keyframes slot-in {
+  0% { transform: scale(0.7); }
+  60% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+.dex-caption {
+  min-height: 2.9rem;
+  margin: 1.1rem auto 0;
+  max-width: 24rem;
+  font-size: 0.9rem;
+}
+
+.dex-caption .dex-name {
+  color: var(--ink);
+}
+
+.dex-caption .dex-where {
+  color: var(--accent);
+}
+
+/* ---------------------------------------------------------------
+   The tally, and the one way to undo it.
+   --------------------------------------------------------------- */
+
+/* Four columns rather than a row that wraps, which on a narrow phone left
+   one figure stranded on a line of its own. */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.75rem;
+  width: 100%;
+  max-width: 27rem;
+  margin: 2.25rem 0 0;
+  padding-top: 1.75rem;
+  border-top: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+.stat {
+  text-align: center;
+}
+
+.stat dt {
+  font-size: 0.65rem;
+  letter-spacing: 0.18em;
+  text-indent: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.stat dd {
+  margin: 0.35rem 0 0;
+  font-size: 1.35rem;
+  font-weight: 300;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Every species caught. The tally goes gold rather than throwing a party,
+   which is the difference between finishing something and being congratulated
+   at. */
+.stats.is-complete {
+  border-top-color: color-mix(in srgb, var(--accent) 55%, transparent);
+}
+
+.stats.is-complete .stat dd {
+  color: var(--accent);
+}
+
+.game-reset {
+  margin-top: 2rem;
+}
+
+.ghost-button {
+  padding: 0.4rem 0.9rem;
+  font: inherit;
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  text-indent: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+@media (hover: hover) {
+  .ghost-button:hover {
+    color: var(--accent);
+    border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+  }
+}
+
+/* Asking twice, in the button itself. A browser confirm() would be the only
+   thing on the page that did not belong to it. */
+.ghost-button.is-confirming {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+/* Private windows and browsers with storage switched off still play. The
+   script says so here rather than losing a collection without a word. */
+.store-note {
+  display: block;
+  margin-top: 0.75rem;
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+}
+
+@media (max-width: 26rem) {
+  .dex-row {
+    gap: 0.35rem;
+  }
+
+  .dex-slot {
+    padding: 0.25rem;
+  }
+
+  .dex-count {
+    min-width: 1rem;
+    font-size: 0.6rem;
+    line-height: 1rem;
+  }
+
+  .stats {
+    gap: 1.25rem;
+  }
+}
+
+/* The ring is the game, so it keeps moving, but everything that is only
+   flourish stops: the idle bob, the shiny's glint, and the drift of the word
+   over the ring. The site's stylesheet already cuts every duration to nothing
+   under this query, which would leave those looping on the spot. */
+@media (prefers-reduced-motion: reduce) {
+  .creature-bob,
+  .creature-shadow,
+  .creature-sparkle,
+  .verdict.is-showing,
+  .burst {
+    animation: none !important;
+  }
+
+  .verdict.is-showing {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+
+  .burst {
+    display: none;
+  }
+}

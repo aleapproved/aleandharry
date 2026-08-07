@@ -4,7 +4,9 @@ import { chromium } from 'playwright';
 import { startServer } from './server.mjs';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
-const PAGES = ['index', 'our-story', 'the-day', 'travel', 'rsvp', '404'];
+// The safari is unlinked from the nav, but it is still a page of this site
+// and answers to every layout invariant the others do.
+const PAGES = ['index', 'our-story', 'the-day', 'travel', 'rsvp', 'game', '404'];
 const WIDTHS = [1280, 768, 390, 360, 320];
 
 let failures = 0;
@@ -320,6 +322,7 @@ try {
     await page.goto(`${base}/index.html`);
     for (const file of ['mudkip-badge.png', 'ditto-badge.png', 'bellibolt-badge.png',
                         'chansey-badge.png', 'lapras-badge.png',
+                        'solrock-badge.png', 'lunatone-badge.png',
                         'solrock-icon.png', 'lunatone-icon.png']) {
       const holes = await page.evaluate(async (src) => {
         const img = new Image();
@@ -431,6 +434,180 @@ try {
     });
     check('confirmation is visible once the form is hidden',
       await page.locator('#rsvpStatus').isVisible());
+    await page.close();
+  }
+
+  // ---------------------------------------------------------------
+  // The safari. It is the one page with rules of its own, so the checks
+  // here are the rules: it stays hidden, the two that keep hours keep
+  // them, a throw runs all the way through, and a collection survives
+  // both a reload and a corrupted save.
+  // ---------------------------------------------------------------
+  section('Safari');
+  {
+    // Hidden means it is never named. The way in is the marks: every one of
+    // them is a door, so whichever Pokémon a visitor reaches for is the one
+    // that works, and a mark left unwrapped is a dead one among live ones.
+    for (const name of PAGES) {
+      const html = await readFile(new URL(`../${name}.html`, import.meta.url), 'utf8');
+      const nav = /<nav>([\s\S]*?)<\/nav>/.exec(html);
+      check('the nav never names the safari', !/\/game/.test(nav ? nav[1] : ''), name);
+
+      const marks = [...html.matchAll(/<img class="page-mark"/g)].length;
+      const doors = [...html.matchAll(/<a class="mark-link" href="\/game"/g)].length;
+      check('every mark is a way in to the safari', marks === doors,
+        `${name}: ${marks} marks, ${doors} doors`);
+    }
+    const gameHtml = await readFile(new URL('../game.html', import.meta.url), 'utf8');
+    check('the safari asks not to be indexed', /name="robots" content="noindex"/.test(gameHtml));
+
+    // A link wrapping artwork that is deliberately alt="" has no accessible
+    // name of its own, so it has to be given one.
+    {
+      const page = await browser.newPage();
+      for (const name of ['our-story', 'the-day', 'travel', 'rsvp']) {
+        await page.goto(`${base}/${name}.html`);
+        const named = await page.evaluate(() => [...document.querySelectorAll('.mark-link')]
+          .every((a) => (a.getAttribute('aria-label') || '').trim().length > 0));
+        check('the way in is announced to a screen reader', named, name);
+      }
+      await page.close();
+    }
+
+    // Six of the seven are only ever named in the script, so the asset check
+    // above, which reads the markup, cannot see them.
+    const script = await readFile(new URL('../game.js', import.meta.url), 'utf8');
+    const roster = [...script.matchAll(/art: '([^']+)'/g)].map((m) => m[1]);
+    check('the roster is seven', roster.length === 7, `found ${roster.length}`);
+    for (const art of roster) {
+      const res = await fetch(base + art, { redirect: 'manual' });
+      check('roster artwork resolves', res.status === 200, `${art} returned ${res.status}`);
+    }
+
+    const page = await browser.newPage({ viewport: { width: 390, height: 900 } });
+    const errors = [];
+    page.on('pageerror', (e) => errors.push(e.message));
+
+    // The page opens on the stage, with no heading anybody can see, so that
+    // the Pokédex under it shows above the fold. The heading is still there
+    // for the document outline, and it is easy to delete as dead markup by
+    // somebody who cannot see it on the page.
+    await page.goto(`${base}/game.html`);
+    const heading = await page.evaluate(() => {
+      const h = document.querySelector('h1');
+      if (!h) return null;
+      const box = h.getBoundingClientRect();
+      return { text: h.textContent.trim(), width: box.width, height: box.height };
+    });
+    check('the safari still has a heading', heading && heading.text === 'Safari',
+      JSON.stringify(heading));
+    check('the heading takes up no room on the page',
+      heading && heading.width <= 1 && heading.height <= 1, JSON.stringify(heading));
+
+    // The point of dropping it: what is under the stage has to be reachable
+    // by eye on an ordinary laptop, or the page reads as ending at the stage.
+    for (const height of [800, 720]) {
+      const short = await browser.newPage({ viewport: { width: 1280, height } });
+      await short.goto(`${base}/game.html`);
+      const fold = await short.evaluate(() => ({
+        dex: document.querySelector('.dex').getBoundingClientRect().top,
+        stage: document.querySelector('.stage').getBoundingClientRect().bottom
+      }));
+      check('the Pokédex starts above the fold', fold.dex < height,
+        `${height}px tall: stage ends at ${Math.round(fold.stage)}, Pokédex starts at ${Math.round(fold.dex)}`);
+      await short.close();
+    }
+
+    // An encounter is waiting the moment the page settles, with a full set of
+    // balls and a line naming what turned up.
+    await page.waitForFunction(() => document.getElementById('stage').getAttribute('aria-disabled') === 'false');
+    const opening = await page.evaluate(() => ({
+      pips: document.querySelectorAll('.pip:not(.is-spent)').length,
+      status: document.getElementById('gameStatus').textContent,
+      slots: document.querySelectorAll('.dex-slot').length,
+      locked: document.querySelectorAll('.dex-slot.is-locked').length
+    }));
+    check('an encounter is waiting on arrival', /appeared/.test(opening.status), opening.status);
+    check('it opens with a full set of balls', opening.pips === 3, `${opening.pips} pips`);
+    check('the Pokédex has a place for every species', opening.slots === 7, `${opening.slots} slots`);
+    check('a fresh Pokédex is entirely silhouettes', opening.locked === 7, `${opening.locked} locked`);
+
+    // A throw runs the whole way through on its own and hands the stage back,
+    // either for the next ball or for the next Pokémon.
+    await page.locator('#stage').dispatchEvent('pointerdown', { button: 0 });
+    check('the stage is held while the ball is in the air',
+      await page.evaluate(() => document.getElementById('stage').getAttribute('aria-disabled')) === 'true');
+    await page.waitForFunction(
+      () => document.getElementById('stage').getAttribute('aria-disabled') === 'false',
+      null, { timeout: 15000 });
+    const after = await page.evaluate(() => document.getElementById('gameStatus').textContent);
+    check('a throw resolves into a result', /caught|broke free|got away|appeared/.test(after), after);
+    check('the throw threw no errors', errors.length === 0, errors[0]);
+    await page.close();
+  }
+
+  // Solrock and Lunatone are the reason the theme toggle is part of the game,
+  // so neither may ever turn up in the other one's half of the day. Each load
+  // is one draw; twenty of them in each scheme is enough to catch a pool that
+  // was built without looking at the theme.
+  {
+    for (const [colorScheme, forbidden] of [['light', 'Lunatone'], ['dark', 'Solrock']]) {
+      const context = await browser.newContext({ colorScheme, viewport: { width: 390, height: 900 } });
+      const page = await context.newPage();
+      const seen = new Set();
+      for (let i = 0; i < 20; i++) {
+        await page.goto(`${base}/game.html`);
+        await page.waitForFunction(() => /appeared/.test(document.getElementById('gameStatus').textContent));
+        seen.add(await page.evaluate(() => document.querySelector('#gameStatus .said').textContent));
+      }
+      check(`${forbidden} never appears in ${colorScheme}`, !seen.has(forbidden), [...seen].join(', '));
+      check(`${colorScheme} draws more than one species`, seen.size > 1, [...seen].join(', '));
+      await context.close();
+    }
+  }
+
+  // A collection is the only thing this site keeps for anybody, and it keeps
+  // it without a login, so the two ways it could be lost both get a check:
+  // closing the tab, and a save that has been damaged since it was written.
+  {
+    const page = await browser.newPage({ viewport: { width: 390, height: 900 } });
+    await page.goto(`${base}/game.html`);
+    await page.evaluate(() => {
+      localStorage.setItem('aleandharry:safari:v1', JSON.stringify({
+        v: 1, sound: false, total: 12, streak: 2, best: 5,
+        species: { mudkip: { caught: 12, shiny: 1, seen: 20, first: 1754400000000 } }
+      }));
+    });
+    await page.reload();
+    await page.waitForFunction(() => document.getElementById('statCaught').textContent !== '0');
+    const kept = await page.evaluate(() => ({
+      caught: document.getElementById('statCaught').textContent,
+      species: document.getElementById('statSpecies').textContent,
+      best: document.getElementById('statBest').textContent,
+      mudkipLocked: document.querySelector('[data-key="mudkip"]').classList.contains('is-locked'),
+      shinyRing: document.querySelector('[data-key="mudkip"]').classList.contains('has-shiny'),
+      dittoLocked: document.querySelector('[data-key="ditto"]').classList.contains('is-locked')
+    }));
+    check('a collection survives a reload', kept.caught === '12' && kept.best === '5',
+      `${kept.caught} caught, best ${kept.best}`);
+    check('the tally counts species, not catches', kept.species === '1/7', kept.species);
+    check('a caught entry comes out of silhouette', !kept.mudkipLocked);
+    check('an uncaught entry stays in silhouette', kept.dittoLocked);
+    check('a shiny is marked on its entry', kept.shinyRing);
+
+    // Anything that is not a save this version wrote is treated as no save at
+    // all. A thrown exception here would take the whole page down with it.
+    const broken = [];
+    page.on('pageerror', (e) => broken.push(e.message));
+    for (const junk of ['{', 'null', '[]', '{"v":99}', '{"v":1,"species":null}',
+                        '{"v":1,"total":"lots","species":{"mudkip":{"caught":-4}}}']) {
+      await page.evaluate((value) => localStorage.setItem('aleandharry:safari:v1', value), junk);
+      await page.reload();
+      await page.waitForFunction(() => document.getElementById('stage'));
+      const reading = await page.evaluate(() => document.getElementById('statCaught').textContent);
+      check('a damaged save starts a fresh safari', reading === '0', `${junk} gave ${reading}`);
+    }
+    check('no damaged save broke the page', broken.length === 0, broken[0]);
     await page.close();
   }
 

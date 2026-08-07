@@ -361,6 +361,39 @@ p.quote {
   margin: 0 auto 1.5rem;
 }
 
+/* Every mark is the way in to the safari at /game, which is linked from
+   nowhere else and stays out of search. Making it a rule rather than hiding
+   the door behind one particular Pokémon means whichever one you reach for is
+   the one that works.
+
+   The anchor has to leave the mark exactly where it was, so it takes over the
+   img's own centring and the img gives it up. The mark is display:block, so
+   no line box forms inside the link and nothing gains a descender's worth of
+   height. */
+.mark-link {
+  display: block;
+  width: fit-content;
+  margin: 0 auto 1.5rem;
+  border-radius: 4px;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.mark-link .page-mark {
+  margin: 0;
+}
+
+/* Enough to say it is a door, not enough to announce one. */
+@media (hover: hover) {
+  .mark-link:hover {
+    transform: scale(1.05);
+  }
+}
+
+.mark-link:active {
+  transform: scale(0.97);
+  transition-duration: 0.12s;
+}
+
 .page-marks {
   display: flex;
   justify-content: center;
@@ -369,7 +402,8 @@ p.quote {
   margin: 0 auto 1.5rem;
 }
 
-.page-marks .page-mark {
+.page-marks .page-mark,
+.page-marks .mark-link {
   margin: 0;
 }
 

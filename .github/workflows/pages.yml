@@ -67,12 +67,12 @@ jobs:
       # with. Local files keep plain names; only what is published is stamped.
       - name: Version the assets
         run: |
-          for asset in styles.css theme-toggle.js countdown.js rsvp.js lightbox.js; do
+          for asset in styles.css game.css theme-toggle.js countdown.js rsvp.js lightbox.js game.js; do
             v=$(sha256sum "_site/$asset" | cut -c1-10)
             sed -i "s|\"/$asset\"|\"/$asset?v=$v\"|g" _site/*.html
           done
           # A page that still asks for a bare name would be the same bug again.
-          if grep -lE '"/(styles\.css|[a-z-]+\.js)"' _site/*.html; then
+          if grep -lE '"/[a-z-]+\.(css|js)"' _site/*.html; then
             echo "::error::the files above reference an unversioned asset"
             exit 1
           fi
